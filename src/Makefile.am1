@@ -1,0 +1,57 @@
+AM_CPPFLAGS = -I$(srcdir)/../lib
+
+ROOT_LDADD = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraph3d -lGpad \
+	     -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore \
+	     -lThread -lfreetype -ldl
+
+bin_PROGRAMS = geneFusions \
+	       gfrAnnotationConsistencyFilter \
+	       gfrLargeScaleHomologyFilter \
+	       gfrSmallScaleHomologyFilter \
+	       gfrAbnormalInsertSizeFilter \
+	       gfrAddInfo \
+	       gfrProximityFilter \
+	       bpFilter \
+	       bp2alignment \
+	       gfrPCRFilter \
+	       gfrBlackListFilter \
+	       gfr2bpJunctions \
+	       bowtie2bp \
+	       gfrConfidenceValues \
+	       validateBpJunctions \
+	       gfrExpressionConsistencyFilter \
+	       gfrMitochondrialFilter \
+	       gfrRepeatMaskerFilter \
+	       gfrCountPairTypes \
+	       gfrRibosomalFilter \
+	       gfrSpliceJunctionFilter \
+	       gfrClassify \
+	       gfrWhiteListFilter \
+	       gfr2images \
+	       gfr2bed \
+	       gfr2fasta \
+	       gfr2gff \
+	       bp2wig \
+	       plotIntraDistribution \
+	       export2mrf \
+	       gfrConfidenceValueTranscript \
+	       geneFusions_cgi \
+	       showDetails_cgi \
+	       seqViz_cgi \
+	       findFusionPartner.cgi
+
+geneFusions_SOURCES = geneFusions.c
+geneFusions_LDADD = -lbios -lm
+
+gfrAnnotationConsistencyFilter_SOURCES = gfrAnnotationConsistencyFilter.c
+
+bpFilter_SOURCES = bpfilter.c
+bpFilter_LDADD = 
+
+gfr2images_SOURCES = gfr2images.c
+gfr2images_LDADD = ../lib/libfusionseq.la -lbios -lgd -lpng -lz -ljpg -lfreetype -lm
+
+plotIntraDistribution_SOURCES = plotIntraDistribution.c
+plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
+plotIntraDistribution_CPPFLAGS = -I/usr/include/root
+plotIntraDistribution_LDADD = -L/usr/lib/root $(ROOT_LDADD)

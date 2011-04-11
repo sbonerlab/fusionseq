@@ -1,0 +1,45 @@
+
+
+# Used by bowtie (gfrHomologyFilter.c, gfr2bpJunctions.c, validateBpJunctions.c)
+BOWTIE_INDEXES="/home2/as898/Projects/genomes/BOWTIE"
+BOWTIE_GENOME="hg18_nh"
+BOWTIE_COMPOSITE="hg18_knownGeneAnnotationTranscriptCompositeModel" 
+
+# BLAT and hg18 (bp2alignment.c gfr2bpJunctions.c )
+BLAT_TWO_BIT_TO_FA="/home2/as898/bin/blat/twoBitToFa" 
+BLAT_DATA_DIR="/home2/as898/Projects/genomes/human/hg18/indexes/blat"
+BLAT_TWO_BIT_DATA_FILENAME="hg18.2bit" 
+
+# Genomes; Used by bowtie gfrHomologyFilter.c
+TRANSCRIPT_COMPOSITE_MODEL_DIR="/home1/lh372/DATA/genomes/human/hg18"
+TRANSCRIPT_COMPOSITE_MODEL_FA_FILENAME="knownGeneAnnotationTranscriptCompositeModel.fa"
+
+# Gene annotation (geneFusions.c gfrAddInfo.c gfrClassify.c gfrTreeFamFilter.c )
+ANNOTATION_DIR="/home2/as898/Projects/annotation"
+
+# KnownGene annotation
+#ANNOTATION_FILENAME="knownGeneAnnotation.txt"
+KNOWN_GENE_XREF_FILENAME="kgXref.txt"
+KNOWN_GENE_TREE_FAM_FILENAME="knownToTreefam.txt"
+TRANSCRIPT_COMPOSITE_MODEL_FILENAME="knownGeneAnnotationTranscriptCompositeModel.txt"
+
+# Used by gfrRibosomal.c
+RIBOSOMAL_DIR="/home2/as898/Projects/genomes/ribosomal"
+RIBOSOMAL_FILENAME="ribosomal_GRCh37.2bit" 
+
+# Used by geneFusions_cgi.c, showDetails_cgi.c, singleLocus_cgi.c, findFusionPartner_cgi.c
+WEB_URL_CGI="http://dynamic.gersteinlab.org/people/asboner/"
+#WEB_URL_CGI="http://dynamic.gersteinlab.org/people/asboner/fusionSeqPaper"
+WEB_DATA_DIR="/home/asboner/public_html/RNASeq"
+#WEB_DATA_DIR="/home/asboner/public_html/FusionSeq"
+WEB_DATA_LINK="http://homes.gersteinlab.org/people/asboner/RNASeq"
+#WEB_DATA_LINK="http://homes.gersteinlab.org/people/asboner/FusionSeq"
+UCSC_GENOME_BROWSER_FLANKING_REGION=500
+
+
+#Used by SeqViz: singleLocus_cgi.c sqvCircos.c sqvWeb.c sqvUtil.c
+WEB_PUB_DIR="http://homes.gersteinlab.org/people/asboner/web"
+WEB_SDATA_DIR="/home/asboner/public_html/structdata"
+#define WEB_CIRCOS_DIR="/home/asboner/circos-0.49"
+
+
