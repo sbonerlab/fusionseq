@@ -736,6 +736,17 @@ uninstall-am:
 	ps ps-am tags tags-recursive uninstall uninstall-am
 
 
+optional:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) optional
+
+cgi:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) cgi
+
+test:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) test
+
+.PHONY: optional cgi test
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -145,12 +145,12 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
-LIBOBJS =  ${LIBOBJDIR}malloc$U.o ${LIBOBJDIR}realloc$U.o
+LIBOBJS = 
 LIBS = -lmrf -lbios -lgsl -lgslcblas -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
-LTLIBOBJS =  ${LIBOBJDIR}malloc$U.lo ${LIBOBJDIR}realloc$U.lo
+LTLIBOBJS = 
 MAKEINFO = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -735,6 +735,17 @@ uninstall-am:
 	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
 	ps ps-am tags tags-recursive uninstall uninstall-am
 
+
+optional:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) optional
+
+cgi:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) cgi
+
+test:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) test
+
+.PHONY: optional cgi test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

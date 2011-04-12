@@ -1,3 +1,7 @@
+# -----------------------------------------------------------------------------
+# Common library
+# -----------------------------------------------------------------------------
+
 lib_LTLIBRARIES = libfusionseq.la
 libfusionseq_la_SOURCES = bp.c \
 			  gfr.c \
@@ -15,10 +19,9 @@ include_HEADERS = bp.h \
 		  sqvWeb.h \
 		  util.h
 
-
-ROOT_LDADDFLAGS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraph3d -lGpad \
-		  -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore \
-		  -lThread -lfreetype -ldl
+# -----------------------------------------------------------------------------
+# FusionSeq programs
+# -----------------------------------------------------------------------------
 
 bin_PROGRAMS = geneFusions \
 	       gfrAnnotationConsistencyFilter \
@@ -42,25 +45,51 @@ bin_PROGRAMS = geneFusions \
 	       gfrRibosomalFilter \
 	       gfrSpliceJunctionFilter \
 	       gfrClassify \
-	       gfrWhiteListFilter \
-	       gfr2images \
-	       gfr2bed \
-	       gfr2fasta \
-	       gfr2gff \
-	       bp2wig \
-	       plotIntraDistribution \
-	       export2mrf \
-	       gfrConfidenceValueTranscript \
-	       geneFusions_cgi \
-	       showDetails_cgi \
-	       seqViz_cgi \
-	       findFusionPartner.cgi \
-	       gfSimulation \
-	       mrfPseudogeneOverlap \
-	       quantifierAddInfo \
-	       bp2fasta \
-	       bpClustering \
-	       bpValidate
+	       gfrWhiteListFilter
+
+EXTRA_PROGRAMS = gfr2images \
+		 gfr2bed \
+		 gfr2fasta \
+		 gfr2gff \
+		 bp2wig \
+		 plotIntraDistribution \
+		 export2mrf \
+		 gfrConfidenceValueTranscript \
+		 geneFusions_cgi \
+		 showDetails_cgi \
+		 seqViz_cgi \
+		 findFusionPartner.cgi \
+		 gfSimulation \
+		 mrfPseudogeneOverlap \
+		 quantifierAddInfo \
+		 bp2fasta \
+		 bpClustering \
+		 bpValidate
+
+optional: gfr2images \
+	  gfr2bed \
+	  gfr2fasta \
+	  gfr2gff \
+	  bp2wig \
+	  plotIntraDistribution \
+	  export2mrf \
+	  gfrConfidenceValueTranscript
+
+cgi: geneFusions_cgi \
+     showDetails_cgi \
+     seqViz_cgi \
+     findFusionPartner.cgi
+
+test: gfSimulation \
+      mrfPseudogeneOverlap \
+      quantifierAddInfo \
+      bp2fasta \
+      bpClustering \
+      bpValidate
+
+CLEANFILES = $(EXTRA_PROGRAMS)
+
+.PHONY: optional cgi test
 
 # -----------------------------------------------------------------------------
 # CORE: Finding candidate fusions
@@ -133,7 +162,6 @@ bowtie2bp_LDADD = libfusionseq.la -lbios
 validateBpJunctions_SOURCES = validateBpJunctions.c
 validateBpJunctions_LDADD = libfusionseq.la -lbios
 
-#############
 bpFilter_SOURCES = bpFilter.cpp
 bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
 bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@  @ROOTLIBS@ -ldl
@@ -145,14 +173,12 @@ bp2alignment_LDADD = libfusionseq.la -lbios
 # OPTIONAL
 # -----------------------------------------------------------------------------
 
-#############
 plotIntraDistribution_SOURCES = plotIntraDistribution.cpp
 plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
 plotIntraDistribution_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
 
-#############
 gfr2images_SOURCES = gfr2images.c
-gfr2images_LDADD = libfusionseq.la -lbios -lgd -lpng -lz -ljpeg -lfreetype -lm
+gfr2images_LDADD = libfusionseq.la -lbios -lgd -lm
 
 gfr2bed_SOURCES = gfr2bed.c
 gfr2bed_LDADD = libfusionseq.la -lbios

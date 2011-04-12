@@ -3,12 +3,14 @@
 
 AC_PREREQ([2.67])
 AC_INIT([fusionseq], [0.7.0], [david.chen@yale.edu])
-AC_CONFIG_SRCDIR([src/gfr2bed.c])
+AC_CONFIG_SRCDIR([src/geneFusions.c])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 LT_INIT
+
+#AM_SILENT_RULES([yes])
 
 # Checks for programs.
 AC_PROG_CC
@@ -37,5 +39,6 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd pathconf rint setenv strchr strdup strstr])
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile 
+		 src/Makefile])
 AC_OUTPUT

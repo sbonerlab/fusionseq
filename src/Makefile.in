@@ -15,6 +15,10 @@
 
 @SET_MAKE@
 
+# -----------------------------------------------------------------------------
+# Common library
+# -----------------------------------------------------------------------------
+
 
 
 VPATH = @srcdir@
@@ -50,15 +54,15 @@ bin_PROGRAMS = geneFusions$(EXEEXT) \
 	gfrMitochondrialFilter$(EXEEXT) gfrRepeatMaskerFilter$(EXEEXT) \
 	gfrCountPairTypes$(EXEEXT) gfrRibosomalFilter$(EXEEXT) \
 	gfrSpliceJunctionFilter$(EXEEXT) gfrClassify$(EXEEXT) \
-	gfrWhiteListFilter$(EXEEXT) gfr2images$(EXEEXT) \
-	gfr2bed$(EXEEXT) gfr2fasta$(EXEEXT) gfr2gff$(EXEEXT) \
-	bp2wig$(EXEEXT) plotIntraDistribution$(EXEEXT) \
-	export2mrf$(EXEEXT) gfrConfidenceValueTranscript$(EXEEXT) \
-	geneFusions_cgi$(EXEEXT) showDetails_cgi$(EXEEXT) \
-	seqViz_cgi$(EXEEXT) findFusionPartner.cgi$(EXEEXT) \
-	gfSimulation$(EXEEXT) mrfPseudogeneOverlap$(EXEEXT) \
-	quantifierAddInfo$(EXEEXT) bp2fasta$(EXEEXT) \
-	bpClustering$(EXEEXT) bpValidate$(EXEEXT)
+	gfrWhiteListFilter$(EXEEXT)
+EXTRA_PROGRAMS = gfr2images$(EXEEXT) gfr2bed$(EXEEXT) \
+	gfr2fasta$(EXEEXT) gfr2gff$(EXEEXT) bp2wig$(EXEEXT) \
+	plotIntraDistribution$(EXEEXT) export2mrf$(EXEEXT) \
+	gfrConfidenceValueTranscript$(EXEEXT) geneFusions_cgi$(EXEEXT) \
+	showDetails_cgi$(EXEEXT) seqViz_cgi$(EXEEXT) \
+	findFusionPartner.cgi$(EXEEXT) gfSimulation$(EXEEXT) \
+	mrfPseudogeneOverlap$(EXEEXT) quantifierAddInfo$(EXEEXT) \
+	bp2fasta$(EXEEXT) bpClustering$(EXEEXT) bpValidate$(EXEEXT)
 subdir = src
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -471,10 +475,7 @@ include_HEADERS = bp.h \
 		  sqvWeb.h \
 		  util.h
 
-ROOT_LDADDFLAGS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraph3d -lGpad \
-		  -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore \
-		  -lThread -lfreetype -ldl
-
+CLEANFILES = $(EXTRA_PROGRAMS)
 
 # -----------------------------------------------------------------------------
 # CORE: Finding candidate fusions
@@ -525,8 +526,6 @@ bowtie2bp_SOURCES = bowtie2bp.c
 bowtie2bp_LDADD = libfusionseq.la -lbios
 validateBpJunctions_SOURCES = validateBpJunctions.c
 validateBpJunctions_LDADD = libfusionseq.la -lbios
-
-#############
 bpFilter_SOURCES = bpFilter.cpp
 bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
 bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@  @ROOTLIBS@ -ldl
@@ -536,15 +535,12 @@ bp2alignment_LDADD = libfusionseq.la -lbios
 # -----------------------------------------------------------------------------
 # OPTIONAL
 # -----------------------------------------------------------------------------
-
-#############
 plotIntraDistribution_SOURCES = plotIntraDistribution.cpp
 plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
 plotIntraDistribution_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
-
-#############
 gfr2images_SOURCES = gfr2images.c
-gfr2images_LDADD = libfusionseq.la -lbios -lgd -lpng -lz -ljpeg -lfreetype -lm
+#gfr2images_LDADD = libfusionseq.la -lbios -lgd -lpng -lz -ljpeg -lfreetype -lm
+gfr2images_LDADD = libfusionseq.la -lbios -lgd -lm
 gfr2bed_SOURCES = gfr2bed.c
 gfr2bed_LDADD = libfusionseq.la -lbios
 gfr2fasta_SOURCES = gfr2fasta.c
@@ -1077,6 +1073,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -1175,6 +1172,29 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-includeHEADERS uninstall-libLTLIBRARIES
 
+
+optional: gfr2images \
+	  gfr2bed \
+	  gfr2fasta \
+	  gfr2gff \
+	  bp2wig \
+	  plotIntraDistribution \
+	  export2mrf \
+	  gfrConfidenceValueTranscript
+
+cgi: geneFusions_cgi \
+     showDetails_cgi \
+     seqViz_cgi \
+     findFusionPartner.cgi
+
+test: gfSimulation \
+      mrfPseudogeneOverlap \
+      quantifierAddInfo \
+      bp2fasta \
+      bpClustering \
+      bpValidate
+
+.PHONY: optional cgi test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

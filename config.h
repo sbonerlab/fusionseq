@@ -42,7 +42,7 @@
 
 /* Define to 1 if your system has a GNU libc compatible `malloc' function, and
    to 0 otherwise. */
-#define HAVE_MALLOC 0
+#define HAVE_MALLOC 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -52,7 +52,7 @@
 
 /* Define to 1 if your system has a GNU libc compatible `realloc' function,
    and to 0 otherwise. */
-#define HAVE_REALLOC 0
+#define HAVE_REALLOC 1
 
 /* Define to 1 if you have the `rint' function. */
 #define HAVE_RINT 1
@@ -128,10 +128,10 @@
 #define VERSION "0.7.0"
 
 /* Define to rpl_malloc if the replacement function should be used. */
-#define malloc rpl_malloc
+/* #undef malloc */
 
 /* Define to rpl_realloc if the replacement function should be used. */
-#define realloc rpl_realloc
+/* #undef realloc */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
