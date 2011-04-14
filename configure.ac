@@ -10,7 +10,7 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 LT_INIT
 
-#AM_SILENT_RULES([yes])
+AM_SILENT_RULES([yes])
 
 # Checks for programs.
 AC_PROG_CC
@@ -40,5 +40,8 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd pathconf rint setenv strchr strdup strstr])
 
 AC_CONFIG_FILES([Makefile 
-		 src/Makefile])
+		 src/Makefile
+		 src/optional/Makefile
+		 src/cgi/Makefile
+		 src/test/Makefile])
 AC_OUTPUT

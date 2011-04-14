@@ -55,14 +55,6 @@ bin_PROGRAMS = geneFusions$(EXEEXT) \
 	gfrCountPairTypes$(EXEEXT) gfrRibosomalFilter$(EXEEXT) \
 	gfrSpliceJunctionFilter$(EXEEXT) gfrClassify$(EXEEXT) \
 	gfrWhiteListFilter$(EXEEXT)
-EXTRA_PROGRAMS = gfr2images$(EXEEXT) gfr2bed$(EXEEXT) \
-	gfr2fasta$(EXEEXT) gfr2gff$(EXEEXT) bp2wig$(EXEEXT) \
-	plotIntraDistribution$(EXEEXT) export2mrf$(EXEEXT) \
-	gfrConfidenceValueTranscript$(EXEEXT) geneFusions_cgi$(EXEEXT) \
-	showDetails_cgi$(EXEEXT) seqViz_cgi$(EXEEXT) \
-	findFusionPartner.cgi$(EXEEXT) gfSimulation$(EXEEXT) \
-	mrfPseudogeneOverlap$(EXEEXT) quantifierAddInfo$(EXEEXT) \
-	bp2fasta$(EXEEXT) bpClustering$(EXEEXT) bpValidate$(EXEEXT)
 subdir = src
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -106,6 +98,9 @@ libfusionseq_la_DEPENDENCIES =
 am_libfusionseq_la_OBJECTS = bp.lo gfr.lo sqvCircos.lo sqvUtil.lo \
 	sqvWeb.lo util.lo
 libfusionseq_la_OBJECTS = $(am_libfusionseq_la_OBJECTS)
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
 PROGRAMS = $(bin_PROGRAMS)
 am_bowtie2bp_OBJECTS = bowtie2bp.$(OBJEXT)
 bowtie2bp_OBJECTS = $(am_bowtie2bp_OBJECTS)
@@ -113,54 +108,18 @@ bowtie2bp_DEPENDENCIES = libfusionseq.la
 am_bp2alignment_OBJECTS = bp2alignment.$(OBJEXT)
 bp2alignment_OBJECTS = $(am_bp2alignment_OBJECTS)
 bp2alignment_DEPENDENCIES = libfusionseq.la
-am_bp2fasta_OBJECTS = bp2fasta.$(OBJEXT)
-bp2fasta_OBJECTS = $(am_bp2fasta_OBJECTS)
-bp2fasta_DEPENDENCIES = libfusionseq.la
-am_bp2wig_OBJECTS = bp2wig.$(OBJEXT)
-bp2wig_OBJECTS = $(am_bp2wig_OBJECTS)
-bp2wig_DEPENDENCIES = libfusionseq.la
-am_bpClustering_OBJECTS = bpClustering.$(OBJEXT)
-bpClustering_OBJECTS = $(am_bpClustering_OBJECTS)
-bpClustering_DEPENDENCIES = libfusionseq.la
 am_bpFilter_OBJECTS = bpFilter-bpFilter.$(OBJEXT)
 bpFilter_OBJECTS = $(am_bpFilter_OBJECTS)
 bpFilter_DEPENDENCIES = libfusionseq.la
-bpFilter_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+bpFilter_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(bpFilter_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_bpValidate_OBJECTS = bpValidate.$(OBJEXT)
-bpValidate_OBJECTS = $(am_bpValidate_OBJECTS)
-bpValidate_DEPENDENCIES = libfusionseq.la
-am_export2mrf_OBJECTS = export2mrf.$(OBJEXT)
-export2mrf_OBJECTS = $(am_export2mrf_OBJECTS)
-export2mrf_DEPENDENCIES = libfusionseq.la
-am_findFusionPartner_cgi_OBJECTS = findFusionPartner_cgi.$(OBJEXT)
-findFusionPartner_cgi_OBJECTS = $(am_findFusionPartner_cgi_OBJECTS)
-findFusionPartner_cgi_DEPENDENCIES = libfusionseq.la
 am_geneFusions_OBJECTS = geneFusions.$(OBJEXT)
 geneFusions_OBJECTS = $(am_geneFusions_OBJECTS)
 geneFusions_DEPENDENCIES = libfusionseq.la
-am_geneFusions_cgi_OBJECTS = geneFusions_cgi.$(OBJEXT)
-geneFusions_cgi_OBJECTS = $(am_geneFusions_cgi_OBJECTS)
-geneFusions_cgi_DEPENDENCIES = libfusionseq.la
-am_gfSimulation_OBJECTS = gfSimulation.$(OBJEXT)
-gfSimulation_OBJECTS = $(am_gfSimulation_OBJECTS)
-gfSimulation_DEPENDENCIES = libfusionseq.la
-am_gfr2bed_OBJECTS = gfr2bed.$(OBJEXT)
-gfr2bed_OBJECTS = $(am_gfr2bed_OBJECTS)
-gfr2bed_DEPENDENCIES = libfusionseq.la
 am_gfr2bpJunctions_OBJECTS = gfr2bpJunctions.$(OBJEXT)
 gfr2bpJunctions_OBJECTS = $(am_gfr2bpJunctions_OBJECTS)
 gfr2bpJunctions_DEPENDENCIES = libfusionseq.la
-am_gfr2fasta_OBJECTS = gfr2fasta.$(OBJEXT)
-gfr2fasta_OBJECTS = $(am_gfr2fasta_OBJECTS)
-gfr2fasta_DEPENDENCIES = libfusionseq.la
-am_gfr2gff_OBJECTS = gfr2gff.$(OBJEXT)
-gfr2gff_OBJECTS = $(am_gfr2gff_OBJECTS)
-gfr2gff_DEPENDENCIES = libfusionseq.la
-am_gfr2images_OBJECTS = gfr2images.$(OBJEXT)
-gfr2images_OBJECTS = $(am_gfr2images_OBJECTS)
-gfr2images_DEPENDENCIES = libfusionseq.la
 am_gfrAbnormalInsertSizeFilter_OBJECTS =  \
 	gfrAbnormalInsertSizeFilter.$(OBJEXT)
 gfrAbnormalInsertSizeFilter_OBJECTS =  \
@@ -180,11 +139,6 @@ gfrBlackListFilter_DEPENDENCIES = libfusionseq.la
 am_gfrClassify_OBJECTS = gfrClassify.$(OBJEXT)
 gfrClassify_OBJECTS = $(am_gfrClassify_OBJECTS)
 gfrClassify_DEPENDENCIES = libfusionseq.la
-am_gfrConfidenceValueTranscript_OBJECTS =  \
-	gfrConfidenceValueTranscript.$(OBJEXT)
-gfrConfidenceValueTranscript_OBJECTS =  \
-	$(am_gfrConfidenceValueTranscript_OBJECTS)
-gfrConfidenceValueTranscript_DEPENDENCIES = libfusionseq.la
 am_gfrConfidenceValues_OBJECTS = gfrConfidenceValues.$(OBJEXT)
 gfrConfidenceValues_OBJECTS = $(am_gfrConfidenceValues_OBJECTS)
 gfrConfidenceValues_DEPENDENCIES = libfusionseq.la
@@ -229,26 +183,6 @@ gfrSpliceJunctionFilter_DEPENDENCIES = libfusionseq.la
 am_gfrWhiteListFilter_OBJECTS = gfrWhiteListFilter.$(OBJEXT)
 gfrWhiteListFilter_OBJECTS = $(am_gfrWhiteListFilter_OBJECTS)
 gfrWhiteListFilter_DEPENDENCIES = libfusionseq.la
-am_mrfPseudogeneOverlap_OBJECTS = mrfPseudogeneOverlap.$(OBJEXT)
-mrfPseudogeneOverlap_OBJECTS = $(am_mrfPseudogeneOverlap_OBJECTS)
-mrfPseudogeneOverlap_DEPENDENCIES = libfusionseq.la
-am_plotIntraDistribution_OBJECTS =  \
-	plotIntraDistribution-plotIntraDistribution.$(OBJEXT)
-plotIntraDistribution_OBJECTS = $(am_plotIntraDistribution_OBJECTS)
-plotIntraDistribution_DEPENDENCIES = libfusionseq.la
-plotIntraDistribution_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) \
-	$(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
-am_quantifierAddInfo_OBJECTS = quantifierAddInfo.$(OBJEXT)
-quantifierAddInfo_OBJECTS = $(am_quantifierAddInfo_OBJECTS)
-quantifierAddInfo_DEPENDENCIES = libfusionseq.la
-am_seqViz_cgi_OBJECTS = seqViz_cgi.$(OBJEXT)
-seqViz_cgi_OBJECTS = $(am_seqViz_cgi_OBJECTS)
-seqViz_cgi_DEPENDENCIES = libfusionseq.la
-am_showDetails_cgi_OBJECTS = showDetails_cgi.$(OBJEXT)
-showDetails_cgi_OBJECTS = $(am_showDetails_cgi_OBJECTS)
-showDetails_cgi_DEPENDENCIES = libfusionseq.la
 am_validateBpJunctions_OBJECTS = validateBpJunctions.$(OBJEXT)
 validateBpJunctions_OBJECTS = $(am_validateBpJunctions_OBJECTS)
 validateBpJunctions_DEPENDENCIES = libfusionseq.la
@@ -258,34 +192,48 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_$(V))
+am__v_CC_ = $(am__v_CC_$(AM_DEFAULT_VERBOSITY))
+am__v_CC_0 = @echo "  CC    " $@;
+AM_V_at = $(am__v_at_$(V))
+am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
+am__v_at_0 = @
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_$(V))
+am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CCLD_0 = @echo "  CCLD  " $@;
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
+AM_V_CXX = $(am__v_CXX_$(V))
+am__v_CXX_ = $(am__v_CXX_$(AM_DEFAULT_VERBOSITY))
+am__v_CXX_0 = @echo "  CXX   " $@;
 CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CXXLD = $(am__v_CXXLD_$(V))
+am__v_CXXLD_ = $(am__v_CXXLD_$(AM_DEFAULT_VERBOSITY))
+am__v_CXXLD_0 = @echo "  CXXLD " $@;
+AM_V_GEN = $(am__v_GEN_$(V))
+am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
+am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libfusionseq_la_SOURCES) $(bowtie2bp_SOURCES) \
-	$(bp2alignment_SOURCES) $(bp2fasta_SOURCES) $(bp2wig_SOURCES) \
-	$(bpClustering_SOURCES) $(bpFilter_SOURCES) \
-	$(bpValidate_SOURCES) $(export2mrf_SOURCES) \
-	$(findFusionPartner_cgi_SOURCES) $(geneFusions_SOURCES) \
-	$(geneFusions_cgi_SOURCES) $(gfSimulation_SOURCES) \
-	$(gfr2bed_SOURCES) $(gfr2bpJunctions_SOURCES) \
-	$(gfr2fasta_SOURCES) $(gfr2gff_SOURCES) $(gfr2images_SOURCES) \
+	$(bp2alignment_SOURCES) $(bpFilter_SOURCES) \
+	$(geneFusions_SOURCES) $(gfr2bpJunctions_SOURCES) \
 	$(gfrAbnormalInsertSizeFilter_SOURCES) $(gfrAddInfo_SOURCES) \
 	$(gfrAnnotationConsistencyFilter_SOURCES) \
 	$(gfrBlackListFilter_SOURCES) $(gfrClassify_SOURCES) \
-	$(gfrConfidenceValueTranscript_SOURCES) \
 	$(gfrConfidenceValues_SOURCES) $(gfrCountPairTypes_SOURCES) \
 	$(gfrExpressionConsistencyFilter_SOURCES) \
 	$(gfrLargeScaleHomologyFilter_SOURCES) \
@@ -294,22 +242,13 @@ SOURCES = $(libfusionseq_la_SOURCES) $(bowtie2bp_SOURCES) \
 	$(gfrRibosomalFilter_SOURCES) \
 	$(gfrSmallScaleHomologyFilter_SOURCES) \
 	$(gfrSpliceJunctionFilter_SOURCES) \
-	$(gfrWhiteListFilter_SOURCES) $(mrfPseudogeneOverlap_SOURCES) \
-	$(plotIntraDistribution_SOURCES) $(quantifierAddInfo_SOURCES) \
-	$(seqViz_cgi_SOURCES) $(showDetails_cgi_SOURCES) \
-	$(validateBpJunctions_SOURCES)
+	$(gfrWhiteListFilter_SOURCES) $(validateBpJunctions_SOURCES)
 DIST_SOURCES = $(libfusionseq_la_SOURCES) $(bowtie2bp_SOURCES) \
-	$(bp2alignment_SOURCES) $(bp2fasta_SOURCES) $(bp2wig_SOURCES) \
-	$(bpClustering_SOURCES) $(bpFilter_SOURCES) \
-	$(bpValidate_SOURCES) $(export2mrf_SOURCES) \
-	$(findFusionPartner_cgi_SOURCES) $(geneFusions_SOURCES) \
-	$(geneFusions_cgi_SOURCES) $(gfSimulation_SOURCES) \
-	$(gfr2bed_SOURCES) $(gfr2bpJunctions_SOURCES) \
-	$(gfr2fasta_SOURCES) $(gfr2gff_SOURCES) $(gfr2images_SOURCES) \
+	$(bp2alignment_SOURCES) $(bpFilter_SOURCES) \
+	$(geneFusions_SOURCES) $(gfr2bpJunctions_SOURCES) \
 	$(gfrAbnormalInsertSizeFilter_SOURCES) $(gfrAddInfo_SOURCES) \
 	$(gfrAnnotationConsistencyFilter_SOURCES) \
 	$(gfrBlackListFilter_SOURCES) $(gfrClassify_SOURCES) \
-	$(gfrConfidenceValueTranscript_SOURCES) \
 	$(gfrConfidenceValues_SOURCES) $(gfrCountPairTypes_SOURCES) \
 	$(gfrExpressionConsistencyFilter_SOURCES) \
 	$(gfrLargeScaleHomologyFilter_SOURCES) \
@@ -318,16 +257,14 @@ DIST_SOURCES = $(libfusionseq_la_SOURCES) $(bowtie2bp_SOURCES) \
 	$(gfrRibosomalFilter_SOURCES) \
 	$(gfrSmallScaleHomologyFilter_SOURCES) \
 	$(gfrSpliceJunctionFilter_SOURCES) \
-	$(gfrWhiteListFilter_SOURCES) $(mrfPseudogeneOverlap_SOURCES) \
-	$(plotIntraDistribution_SOURCES) $(quantifierAddInfo_SOURCES) \
-	$(seqViz_cgi_SOURCES) $(showDetails_cgi_SOURCES) \
-	$(validateBpJunctions_SOURCES)
+	$(gfrWhiteListFilter_SOURCES) $(validateBpJunctions_SOURCES)
 HEADERS = $(include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run aclocal-1.11
 AMTAR = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run tar
+AM_DEFAULT_VERBOSITY = 0
 AR = ar
 AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
@@ -448,7 +385,7 @@ mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /usr/local
+prefix = /home/dzc/Work/bioinfo/tmp
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -475,7 +412,6 @@ include_HEADERS = bp.h \
 		  sqvWeb.h \
 		  util.h
 
-CLEANFILES = $(EXTRA_PROGRAMS)
 
 # -----------------------------------------------------------------------------
 # CORE: Finding candidate fusions
@@ -531,56 +467,6 @@ bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
 bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L/usr/lib/root -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lz -lGui  -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lz -ldl
 bp2alignment_SOURCES = bp2alignment.c
 bp2alignment_LDADD = libfusionseq.la -lbios
-
-# -----------------------------------------------------------------------------
-# OPTIONAL
-# -----------------------------------------------------------------------------
-plotIntraDistribution_SOURCES = plotIntraDistribution.cpp
-plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
-plotIntraDistribution_LDADD = libfusionseq.la -lstdc++ -lbios -L/usr/lib/root -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lz -lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lz -ldl
-gfr2images_SOURCES = gfr2images.c
-#gfr2images_LDADD = libfusionseq.la -lbios -lgd -lpng -lz -ljpeg -lfreetype -lm
-gfr2images_LDADD = libfusionseq.la -lbios -lgd -lm
-gfr2bed_SOURCES = gfr2bed.c
-gfr2bed_LDADD = libfusionseq.la -lbios
-gfr2fasta_SOURCES = gfr2fasta.c
-gfr2fasta_LDADD = libfusionseq.la -lbios
-gfr2gff_SOURCES = gfr2gff.c
-gfr2gff_LDADD = libfusionseq.la -lbios
-bp2wig_SOURCES = bp2wig.c
-bp2wig_LDADD = libfusionseq.la -lbios
-export2mrf_SOURCES = export2mrf.c
-export2mrf_LDADD = libfusionseq.la -lbios
-gfrConfidenceValueTranscript_SOURCES = gfrConfidenceValueTranscript.c
-gfrConfidenceValueTranscript_LDADD = libfusionseq.la -lbios
-
-# -----------------------------------------------------------------------------
-# CGI
-# -----------------------------------------------------------------------------
-geneFusions_cgi_SOURCES = geneFusions_cgi.c
-geneFusions_cgi_LDADD = libfusionseq.la -lbios
-showDetails_cgi_SOURCES = showDetails_cgi.c
-showDetails_cgi_LDADD = libfusionseq.la -lbios
-seqViz_cgi_SOURCES = seqViz_cgi.c
-seqViz_cgi_LDADD = libfusionseq.la -lbios -lmrf
-findFusionPartner_cgi_SOURCES = findFusionPartner_cgi.c
-findFusionPartner_cgi_LDADD = libfusionseq.la -lbios
-
-# -----------------------------------------------------------------------------
-# TEST
-# -----------------------------------------------------------------------------
-gfSimulation_SOURCES = gfSimulation.c
-gfSimulation_LDADD = libfusionseq.la -lbios -lm
-mrfPseudogeneOverlap_SOURCES = mrfPseudogeneOverlap.c
-mrfPseudogeneOverlap_LDADD = libfusionseq.la -lbios -lmrf -lm
-quantifierAddInfo_SOURCES = quantifierAddInfo.c
-quantifierAddInfo_LDADD = libfusionseq.la -lbios
-bp2fasta_SOURCES = bp2fasta.c
-bp2fasta_LDADD = libfusionseq.la -lbios -lm
-bpClustering_SOURCES = bpClustering.c
-bpClustering_LDADD = libfusionseq.la -lbios -lm
-bpValidate_SOURCES = bpValidate.c
-bpValidate_LDADD = libfusionseq.la -lbios -lm
 all: all-am
 
 .SUFFIXES:
@@ -647,7 +533,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libfusionseq.la: $(libfusionseq_la_OBJECTS) $(libfusionseq_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libfusionseq_la_OBJECTS) $(libfusionseq_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libfusionseq_la_OBJECTS) $(libfusionseq_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -693,127 +579,73 @@ clean-binPROGRAMS:
 	rm -f $$list
 bowtie2bp$(EXEEXT): $(bowtie2bp_OBJECTS) $(bowtie2bp_DEPENDENCIES) 
 	@rm -f bowtie2bp$(EXEEXT)
-	$(LINK) $(bowtie2bp_OBJECTS) $(bowtie2bp_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(bowtie2bp_OBJECTS) $(bowtie2bp_LDADD) $(LIBS)
 bp2alignment$(EXEEXT): $(bp2alignment_OBJECTS) $(bp2alignment_DEPENDENCIES) 
 	@rm -f bp2alignment$(EXEEXT)
-	$(LINK) $(bp2alignment_OBJECTS) $(bp2alignment_LDADD) $(LIBS)
-bp2fasta$(EXEEXT): $(bp2fasta_OBJECTS) $(bp2fasta_DEPENDENCIES) 
-	@rm -f bp2fasta$(EXEEXT)
-	$(LINK) $(bp2fasta_OBJECTS) $(bp2fasta_LDADD) $(LIBS)
-bp2wig$(EXEEXT): $(bp2wig_OBJECTS) $(bp2wig_DEPENDENCIES) 
-	@rm -f bp2wig$(EXEEXT)
-	$(LINK) $(bp2wig_OBJECTS) $(bp2wig_LDADD) $(LIBS)
-bpClustering$(EXEEXT): $(bpClustering_OBJECTS) $(bpClustering_DEPENDENCIES) 
-	@rm -f bpClustering$(EXEEXT)
-	$(LINK) $(bpClustering_OBJECTS) $(bpClustering_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(bp2alignment_OBJECTS) $(bp2alignment_LDADD) $(LIBS)
 bpFilter$(EXEEXT): $(bpFilter_OBJECTS) $(bpFilter_DEPENDENCIES) 
 	@rm -f bpFilter$(EXEEXT)
-	$(bpFilter_LINK) $(bpFilter_OBJECTS) $(bpFilter_LDADD) $(LIBS)
-bpValidate$(EXEEXT): $(bpValidate_OBJECTS) $(bpValidate_DEPENDENCIES) 
-	@rm -f bpValidate$(EXEEXT)
-	$(LINK) $(bpValidate_OBJECTS) $(bpValidate_LDADD) $(LIBS)
-export2mrf$(EXEEXT): $(export2mrf_OBJECTS) $(export2mrf_DEPENDENCIES) 
-	@rm -f export2mrf$(EXEEXT)
-	$(LINK) $(export2mrf_OBJECTS) $(export2mrf_LDADD) $(LIBS)
-findFusionPartner.cgi$(EXEEXT): $(findFusionPartner_cgi_OBJECTS) $(findFusionPartner_cgi_DEPENDENCIES) 
-	@rm -f findFusionPartner.cgi$(EXEEXT)
-	$(LINK) $(findFusionPartner_cgi_OBJECTS) $(findFusionPartner_cgi_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(bpFilter_LINK) $(bpFilter_OBJECTS) $(bpFilter_LDADD) $(LIBS)
 geneFusions$(EXEEXT): $(geneFusions_OBJECTS) $(geneFusions_DEPENDENCIES) 
 	@rm -f geneFusions$(EXEEXT)
-	$(LINK) $(geneFusions_OBJECTS) $(geneFusions_LDADD) $(LIBS)
-geneFusions_cgi$(EXEEXT): $(geneFusions_cgi_OBJECTS) $(geneFusions_cgi_DEPENDENCIES) 
-	@rm -f geneFusions_cgi$(EXEEXT)
-	$(LINK) $(geneFusions_cgi_OBJECTS) $(geneFusions_cgi_LDADD) $(LIBS)
-gfSimulation$(EXEEXT): $(gfSimulation_OBJECTS) $(gfSimulation_DEPENDENCIES) 
-	@rm -f gfSimulation$(EXEEXT)
-	$(LINK) $(gfSimulation_OBJECTS) $(gfSimulation_LDADD) $(LIBS)
-gfr2bed$(EXEEXT): $(gfr2bed_OBJECTS) $(gfr2bed_DEPENDENCIES) 
-	@rm -f gfr2bed$(EXEEXT)
-	$(LINK) $(gfr2bed_OBJECTS) $(gfr2bed_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(geneFusions_OBJECTS) $(geneFusions_LDADD) $(LIBS)
 gfr2bpJunctions$(EXEEXT): $(gfr2bpJunctions_OBJECTS) $(gfr2bpJunctions_DEPENDENCIES) 
 	@rm -f gfr2bpJunctions$(EXEEXT)
-	$(LINK) $(gfr2bpJunctions_OBJECTS) $(gfr2bpJunctions_LDADD) $(LIBS)
-gfr2fasta$(EXEEXT): $(gfr2fasta_OBJECTS) $(gfr2fasta_DEPENDENCIES) 
-	@rm -f gfr2fasta$(EXEEXT)
-	$(LINK) $(gfr2fasta_OBJECTS) $(gfr2fasta_LDADD) $(LIBS)
-gfr2gff$(EXEEXT): $(gfr2gff_OBJECTS) $(gfr2gff_DEPENDENCIES) 
-	@rm -f gfr2gff$(EXEEXT)
-	$(LINK) $(gfr2gff_OBJECTS) $(gfr2gff_LDADD) $(LIBS)
-gfr2images$(EXEEXT): $(gfr2images_OBJECTS) $(gfr2images_DEPENDENCIES) 
-	@rm -f gfr2images$(EXEEXT)
-	$(LINK) $(gfr2images_OBJECTS) $(gfr2images_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfr2bpJunctions_OBJECTS) $(gfr2bpJunctions_LDADD) $(LIBS)
 gfrAbnormalInsertSizeFilter$(EXEEXT): $(gfrAbnormalInsertSizeFilter_OBJECTS) $(gfrAbnormalInsertSizeFilter_DEPENDENCIES) 
 	@rm -f gfrAbnormalInsertSizeFilter$(EXEEXT)
-	$(LINK) $(gfrAbnormalInsertSizeFilter_OBJECTS) $(gfrAbnormalInsertSizeFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrAbnormalInsertSizeFilter_OBJECTS) $(gfrAbnormalInsertSizeFilter_LDADD) $(LIBS)
 gfrAddInfo$(EXEEXT): $(gfrAddInfo_OBJECTS) $(gfrAddInfo_DEPENDENCIES) 
 	@rm -f gfrAddInfo$(EXEEXT)
-	$(LINK) $(gfrAddInfo_OBJECTS) $(gfrAddInfo_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrAddInfo_OBJECTS) $(gfrAddInfo_LDADD) $(LIBS)
 gfrAnnotationConsistencyFilter$(EXEEXT): $(gfrAnnotationConsistencyFilter_OBJECTS) $(gfrAnnotationConsistencyFilter_DEPENDENCIES) 
 	@rm -f gfrAnnotationConsistencyFilter$(EXEEXT)
-	$(LINK) $(gfrAnnotationConsistencyFilter_OBJECTS) $(gfrAnnotationConsistencyFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrAnnotationConsistencyFilter_OBJECTS) $(gfrAnnotationConsistencyFilter_LDADD) $(LIBS)
 gfrBlackListFilter$(EXEEXT): $(gfrBlackListFilter_OBJECTS) $(gfrBlackListFilter_DEPENDENCIES) 
 	@rm -f gfrBlackListFilter$(EXEEXT)
-	$(LINK) $(gfrBlackListFilter_OBJECTS) $(gfrBlackListFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrBlackListFilter_OBJECTS) $(gfrBlackListFilter_LDADD) $(LIBS)
 gfrClassify$(EXEEXT): $(gfrClassify_OBJECTS) $(gfrClassify_DEPENDENCIES) 
 	@rm -f gfrClassify$(EXEEXT)
-	$(LINK) $(gfrClassify_OBJECTS) $(gfrClassify_LDADD) $(LIBS)
-gfrConfidenceValueTranscript$(EXEEXT): $(gfrConfidenceValueTranscript_OBJECTS) $(gfrConfidenceValueTranscript_DEPENDENCIES) 
-	@rm -f gfrConfidenceValueTranscript$(EXEEXT)
-	$(LINK) $(gfrConfidenceValueTranscript_OBJECTS) $(gfrConfidenceValueTranscript_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrClassify_OBJECTS) $(gfrClassify_LDADD) $(LIBS)
 gfrConfidenceValues$(EXEEXT): $(gfrConfidenceValues_OBJECTS) $(gfrConfidenceValues_DEPENDENCIES) 
 	@rm -f gfrConfidenceValues$(EXEEXT)
-	$(LINK) $(gfrConfidenceValues_OBJECTS) $(gfrConfidenceValues_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrConfidenceValues_OBJECTS) $(gfrConfidenceValues_LDADD) $(LIBS)
 gfrCountPairTypes$(EXEEXT): $(gfrCountPairTypes_OBJECTS) $(gfrCountPairTypes_DEPENDENCIES) 
 	@rm -f gfrCountPairTypes$(EXEEXT)
-	$(LINK) $(gfrCountPairTypes_OBJECTS) $(gfrCountPairTypes_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrCountPairTypes_OBJECTS) $(gfrCountPairTypes_LDADD) $(LIBS)
 gfrExpressionConsistencyFilter$(EXEEXT): $(gfrExpressionConsistencyFilter_OBJECTS) $(gfrExpressionConsistencyFilter_DEPENDENCIES) 
 	@rm -f gfrExpressionConsistencyFilter$(EXEEXT)
-	$(LINK) $(gfrExpressionConsistencyFilter_OBJECTS) $(gfrExpressionConsistencyFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrExpressionConsistencyFilter_OBJECTS) $(gfrExpressionConsistencyFilter_LDADD) $(LIBS)
 gfrLargeScaleHomologyFilter$(EXEEXT): $(gfrLargeScaleHomologyFilter_OBJECTS) $(gfrLargeScaleHomologyFilter_DEPENDENCIES) 
 	@rm -f gfrLargeScaleHomologyFilter$(EXEEXT)
-	$(LINK) $(gfrLargeScaleHomologyFilter_OBJECTS) $(gfrLargeScaleHomologyFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrLargeScaleHomologyFilter_OBJECTS) $(gfrLargeScaleHomologyFilter_LDADD) $(LIBS)
 gfrMitochondrialFilter$(EXEEXT): $(gfrMitochondrialFilter_OBJECTS) $(gfrMitochondrialFilter_DEPENDENCIES) 
 	@rm -f gfrMitochondrialFilter$(EXEEXT)
-	$(LINK) $(gfrMitochondrialFilter_OBJECTS) $(gfrMitochondrialFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrMitochondrialFilter_OBJECTS) $(gfrMitochondrialFilter_LDADD) $(LIBS)
 gfrPCRFilter$(EXEEXT): $(gfrPCRFilter_OBJECTS) $(gfrPCRFilter_DEPENDENCIES) 
 	@rm -f gfrPCRFilter$(EXEEXT)
-	$(LINK) $(gfrPCRFilter_OBJECTS) $(gfrPCRFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrPCRFilter_OBJECTS) $(gfrPCRFilter_LDADD) $(LIBS)
 gfrProximityFilter$(EXEEXT): $(gfrProximityFilter_OBJECTS) $(gfrProximityFilter_DEPENDENCIES) 
 	@rm -f gfrProximityFilter$(EXEEXT)
-	$(LINK) $(gfrProximityFilter_OBJECTS) $(gfrProximityFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrProximityFilter_OBJECTS) $(gfrProximityFilter_LDADD) $(LIBS)
 gfrRepeatMaskerFilter$(EXEEXT): $(gfrRepeatMaskerFilter_OBJECTS) $(gfrRepeatMaskerFilter_DEPENDENCIES) 
 	@rm -f gfrRepeatMaskerFilter$(EXEEXT)
-	$(LINK) $(gfrRepeatMaskerFilter_OBJECTS) $(gfrRepeatMaskerFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrRepeatMaskerFilter_OBJECTS) $(gfrRepeatMaskerFilter_LDADD) $(LIBS)
 gfrRibosomalFilter$(EXEEXT): $(gfrRibosomalFilter_OBJECTS) $(gfrRibosomalFilter_DEPENDENCIES) 
 	@rm -f gfrRibosomalFilter$(EXEEXT)
-	$(LINK) $(gfrRibosomalFilter_OBJECTS) $(gfrRibosomalFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrRibosomalFilter_OBJECTS) $(gfrRibosomalFilter_LDADD) $(LIBS)
 gfrSmallScaleHomologyFilter$(EXEEXT): $(gfrSmallScaleHomologyFilter_OBJECTS) $(gfrSmallScaleHomologyFilter_DEPENDENCIES) 
 	@rm -f gfrSmallScaleHomologyFilter$(EXEEXT)
-	$(LINK) $(gfrSmallScaleHomologyFilter_OBJECTS) $(gfrSmallScaleHomologyFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrSmallScaleHomologyFilter_OBJECTS) $(gfrSmallScaleHomologyFilter_LDADD) $(LIBS)
 gfrSpliceJunctionFilter$(EXEEXT): $(gfrSpliceJunctionFilter_OBJECTS) $(gfrSpliceJunctionFilter_DEPENDENCIES) 
 	@rm -f gfrSpliceJunctionFilter$(EXEEXT)
-	$(LINK) $(gfrSpliceJunctionFilter_OBJECTS) $(gfrSpliceJunctionFilter_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrSpliceJunctionFilter_OBJECTS) $(gfrSpliceJunctionFilter_LDADD) $(LIBS)
 gfrWhiteListFilter$(EXEEXT): $(gfrWhiteListFilter_OBJECTS) $(gfrWhiteListFilter_DEPENDENCIES) 
 	@rm -f gfrWhiteListFilter$(EXEEXT)
-	$(LINK) $(gfrWhiteListFilter_OBJECTS) $(gfrWhiteListFilter_LDADD) $(LIBS)
-mrfPseudogeneOverlap$(EXEEXT): $(mrfPseudogeneOverlap_OBJECTS) $(mrfPseudogeneOverlap_DEPENDENCIES) 
-	@rm -f mrfPseudogeneOverlap$(EXEEXT)
-	$(LINK) $(mrfPseudogeneOverlap_OBJECTS) $(mrfPseudogeneOverlap_LDADD) $(LIBS)
-plotIntraDistribution$(EXEEXT): $(plotIntraDistribution_OBJECTS) $(plotIntraDistribution_DEPENDENCIES) 
-	@rm -f plotIntraDistribution$(EXEEXT)
-	$(plotIntraDistribution_LINK) $(plotIntraDistribution_OBJECTS) $(plotIntraDistribution_LDADD) $(LIBS)
-quantifierAddInfo$(EXEEXT): $(quantifierAddInfo_OBJECTS) $(quantifierAddInfo_DEPENDENCIES) 
-	@rm -f quantifierAddInfo$(EXEEXT)
-	$(LINK) $(quantifierAddInfo_OBJECTS) $(quantifierAddInfo_LDADD) $(LIBS)
-seqViz_cgi$(EXEEXT): $(seqViz_cgi_OBJECTS) $(seqViz_cgi_DEPENDENCIES) 
-	@rm -f seqViz_cgi$(EXEEXT)
-	$(LINK) $(seqViz_cgi_OBJECTS) $(seqViz_cgi_LDADD) $(LIBS)
-showDetails_cgi$(EXEEXT): $(showDetails_cgi_OBJECTS) $(showDetails_cgi_DEPENDENCIES) 
-	@rm -f showDetails_cgi$(EXEEXT)
-	$(LINK) $(showDetails_cgi_OBJECTS) $(showDetails_cgi_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gfrWhiteListFilter_OBJECTS) $(gfrWhiteListFilter_LDADD) $(LIBS)
 validateBpJunctions$(EXEEXT): $(validateBpJunctions_OBJECTS) $(validateBpJunctions_DEPENDENCIES) 
 	@rm -f validateBpJunctions$(EXEEXT)
-	$(LINK) $(validateBpJunctions_OBJECTS) $(validateBpJunctions_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(validateBpJunctions_OBJECTS) $(validateBpJunctions_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -824,28 +656,15 @@ distclean-compile:
 include ./$(DEPDIR)/bowtie2bp.Po
 include ./$(DEPDIR)/bp.Plo
 include ./$(DEPDIR)/bp2alignment.Po
-include ./$(DEPDIR)/bp2fasta.Po
-include ./$(DEPDIR)/bp2wig.Po
-include ./$(DEPDIR)/bpClustering.Po
 include ./$(DEPDIR)/bpFilter-bpFilter.Po
-include ./$(DEPDIR)/bpValidate.Po
-include ./$(DEPDIR)/export2mrf.Po
-include ./$(DEPDIR)/findFusionPartner_cgi.Po
 include ./$(DEPDIR)/geneFusions.Po
-include ./$(DEPDIR)/geneFusions_cgi.Po
-include ./$(DEPDIR)/gfSimulation.Po
 include ./$(DEPDIR)/gfr.Plo
-include ./$(DEPDIR)/gfr2bed.Po
 include ./$(DEPDIR)/gfr2bpJunctions.Po
-include ./$(DEPDIR)/gfr2fasta.Po
-include ./$(DEPDIR)/gfr2gff.Po
-include ./$(DEPDIR)/gfr2images.Po
 include ./$(DEPDIR)/gfrAbnormalInsertSizeFilter.Po
 include ./$(DEPDIR)/gfrAddInfo.Po
 include ./$(DEPDIR)/gfrAnnotationConsistencyFilter.Po
 include ./$(DEPDIR)/gfrBlackListFilter.Po
 include ./$(DEPDIR)/gfrClassify.Po
-include ./$(DEPDIR)/gfrConfidenceValueTranscript.Po
 include ./$(DEPDIR)/gfrConfidenceValues.Po
 include ./$(DEPDIR)/gfrCountPairTypes.Po
 include ./$(DEPDIR)/gfrExpressionConsistencyFilter.Po
@@ -858,11 +677,6 @@ include ./$(DEPDIR)/gfrRibosomalFilter.Po
 include ./$(DEPDIR)/gfrSmallScaleHomologyFilter.Po
 include ./$(DEPDIR)/gfrSpliceJunctionFilter.Po
 include ./$(DEPDIR)/gfrWhiteListFilter.Po
-include ./$(DEPDIR)/mrfPseudogeneOverlap.Po
-include ./$(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
-include ./$(DEPDIR)/quantifierAddInfo.Po
-include ./$(DEPDIR)/seqViz_cgi.Po
-include ./$(DEPDIR)/showDetails_cgi.Po
 include ./$(DEPDIR)/sqvCircos.Plo
 include ./$(DEPDIR)/sqvUtil.Plo
 include ./$(DEPDIR)/sqvWeb.Plo
@@ -870,74 +684,68 @@ include ./$(DEPDIR)/util.Plo
 include ./$(DEPDIR)/validateBpJunctions.Po
 
 .c.o:
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	$(AM_V_CC) \
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(COMPILE) -c $<
 
 .c.obj:
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	$(AM_V_CC) \
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
 .c.lo:
-	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+#	$(AM_V_CC) \
 #	source='$<' object='$@' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LTCOMPILE) -c -o $@ $<
 
 .cpp.o:
-	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	$(AM_V_CXX) \
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXXCOMPILE) -c -o $@ $<
 
 .cpp.obj:
-	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	$(AM_V_CXX) \
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .cpp.lo:
-	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+#	$(AM_V_CXX) \
 #	source='$<' object='$@' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(LTCXXCOMPILE) -c -o $@ $<
 
 bpFilter-bpFilter.o: bpFilter.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(bpFilter_CXXFLAGS) $(CXXFLAGS) -MT bpFilter-bpFilter.o -MD -MP -MF $(DEPDIR)/bpFilter-bpFilter.Tpo -c -o bpFilter-bpFilter.o `test -f 'bpFilter.cpp' || echo '$(srcdir)/'`bpFilter.cpp
-	$(am__mv) $(DEPDIR)/bpFilter-bpFilter.Tpo $(DEPDIR)/bpFilter-bpFilter.Po
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(bpFilter_CXXFLAGS) $(CXXFLAGS) -MT bpFilter-bpFilter.o -MD -MP -MF $(DEPDIR)/bpFilter-bpFilter.Tpo -c -o bpFilter-bpFilter.o `test -f 'bpFilter.cpp' || echo '$(srcdir)/'`bpFilter.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/bpFilter-bpFilter.Tpo $(DEPDIR)/bpFilter-bpFilter.Po
+#	$(AM_V_CXX) \
 #	source='bpFilter.cpp' object='bpFilter-bpFilter.o' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(bpFilter_CXXFLAGS) $(CXXFLAGS) -c -o bpFilter-bpFilter.o `test -f 'bpFilter.cpp' || echo '$(srcdir)/'`bpFilter.cpp
 
 bpFilter-bpFilter.obj: bpFilter.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(bpFilter_CXXFLAGS) $(CXXFLAGS) -MT bpFilter-bpFilter.obj -MD -MP -MF $(DEPDIR)/bpFilter-bpFilter.Tpo -c -o bpFilter-bpFilter.obj `if test -f 'bpFilter.cpp'; then $(CYGPATH_W) 'bpFilter.cpp'; else $(CYGPATH_W) '$(srcdir)/bpFilter.cpp'; fi`
-	$(am__mv) $(DEPDIR)/bpFilter-bpFilter.Tpo $(DEPDIR)/bpFilter-bpFilter.Po
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(bpFilter_CXXFLAGS) $(CXXFLAGS) -MT bpFilter-bpFilter.obj -MD -MP -MF $(DEPDIR)/bpFilter-bpFilter.Tpo -c -o bpFilter-bpFilter.obj `if test -f 'bpFilter.cpp'; then $(CYGPATH_W) 'bpFilter.cpp'; else $(CYGPATH_W) '$(srcdir)/bpFilter.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/bpFilter-bpFilter.Tpo $(DEPDIR)/bpFilter-bpFilter.Po
+#	$(AM_V_CXX) \
 #	source='bpFilter.cpp' object='bpFilter-bpFilter.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(bpFilter_CXXFLAGS) $(CXXFLAGS) -c -o bpFilter-bpFilter.obj `if test -f 'bpFilter.cpp'; then $(CYGPATH_W) 'bpFilter.cpp'; else $(CYGPATH_W) '$(srcdir)/bpFilter.cpp'; fi`
-
-plotIntraDistribution-plotIntraDistribution.o: plotIntraDistribution.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -MT plotIntraDistribution-plotIntraDistribution.o -MD -MP -MF $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo -c -o plotIntraDistribution-plotIntraDistribution.o `test -f 'plotIntraDistribution.cpp' || echo '$(srcdir)/'`plotIntraDistribution.cpp
-	$(am__mv) $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
-#	source='plotIntraDistribution.cpp' object='plotIntraDistribution-plotIntraDistribution.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -c -o plotIntraDistribution-plotIntraDistribution.o `test -f 'plotIntraDistribution.cpp' || echo '$(srcdir)/'`plotIntraDistribution.cpp
-
-plotIntraDistribution-plotIntraDistribution.obj: plotIntraDistribution.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -MT plotIntraDistribution-plotIntraDistribution.obj -MD -MP -MF $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo -c -o plotIntraDistribution-plotIntraDistribution.obj `if test -f 'plotIntraDistribution.cpp'; then $(CYGPATH_W) 'plotIntraDistribution.cpp'; else $(CYGPATH_W) '$(srcdir)/plotIntraDistribution.cpp'; fi`
-	$(am__mv) $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
-#	source='plotIntraDistribution.cpp' object='plotIntraDistribution-plotIntraDistribution.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -c -o plotIntraDistribution-plotIntraDistribution.obj `if test -f 'plotIntraDistribution.cpp'; then $(CYGPATH_W) 'plotIntraDistribution.cpp'; else $(CYGPATH_W) '$(srcdir)/plotIntraDistribution.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1073,7 +881,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -1172,29 +979,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-includeHEADERS uninstall-libLTLIBRARIES
 
-
-optional: gfr2images \
-	  gfr2bed \
-	  gfr2fasta \
-	  gfr2gff \
-	  bp2wig \
-	  plotIntraDistribution \
-	  export2mrf \
-	  gfrConfidenceValueTranscript
-
-cgi: geneFusions_cgi \
-     showDetails_cgi \
-     seqViz_cgi \
-     findFusionPartner.cgi
-
-test: gfSimulation \
-      mrfPseudogeneOverlap \
-      quantifierAddInfo \
-      bp2fasta \
-      bpClustering \
-      bpValidate
-
-.PHONY: optional cgi test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -3,12 +3,29 @@ ACLOCAL_AMFLAGS = -I m4
 
 
 optional:
-	cd src && $(MAKE) $(AM_MAKEFLAGS) optional
+	cd src/optional && $(MAKE) $(AM_MAKEFLAGS)
 
 cgi:
-	cd src && $(MAKE) $(AM_MAKEFLAGS) cgi
+	cd src/cgi && $(MAKE) $(AM_MAKEFLAGS) cgi
 
 test:
-	cd src && $(MAKE) $(AM_MAKEFLAGS) test
+	cd src/test && $(MAKE) $(AM_MAKEFLAGS)
 
-.PHONY: optional cgi test
+
+clean-local:
+	cd src/optional && $(MAKE) clean
+	cd src/test && $(MAKE) clean
+	cd src/cgi && $(MAKE) clean
+
+install-exec-local:
+	if test -e src/optional/bp2wig; then cd src/optional && $(MAKE) install; fi
+	if test -e src/test/bp2fasta; then cd src/test && $(MAKE) install; fi
+
+install-data-hook:
+	scripts/install_rc.sh
+
+deploy:
+	scripts/install_deploy.sh
+
+
+.PHONY: clean-local install-exec-local install-data-hook deploy
