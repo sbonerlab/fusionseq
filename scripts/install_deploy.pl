@@ -12,7 +12,7 @@ use Cwd;
 
 use constant CGIS => "geneFusions_cgi showDetails_cgi seqViz_cgi findFusionPartner_cgi";
 
-my $path = getcwd() . "/../default.fusionseqrc";
+my $path = getcwd() . "/default.fusionseqrc";
 my $config = Confp->new($path);
 
 die("Cannot open default.fusionseqrc") if !$config;

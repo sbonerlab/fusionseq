@@ -25,7 +25,7 @@ install-data-hook:
 	scripts/install_rc.sh
 
 deploy:
-	scripts/install_deploy.sh
+	scripts/install_deploy.pl
 
 
 .PHONY: clean-local install-exec-local install-data-hook deploy

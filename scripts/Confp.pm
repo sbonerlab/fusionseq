@@ -68,8 +68,6 @@ sub parse {
 	my $self = shift;
 	my $line = trim(shift);
 
-	print $line, "\n";
-
 	if (substr ($line, 0, 1) =~ /#/) {
 		return 1;
 	} elsif ($line =~ /\w+\s*=\s*(\".*\"|\'.*\'|[^\s\"\']+)/) {
