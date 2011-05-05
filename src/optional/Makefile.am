@@ -3,7 +3,6 @@ bin_PROGRAMS = gfr2images \
 		 gfr2fasta \
 		 gfr2gff \
 		 bp2wig \
-		 plotIntraDistribution \
 		 export2mrf \
 		 gfrConfidenceValueTranscript
 
@@ -12,10 +11,6 @@ AM_CPPFLAGS = -I ../
 # -----------------------------------------------------------------------------
 # OPTIONAL
 # -----------------------------------------------------------------------------
-
-plotIntraDistribution_SOURCES = plotIntraDistribution.cpp
-plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
-plotIntraDistribution_LDADD = ../libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
 
 gfr2images_SOURCES = gfr2images.c
 gfr2images_LDADD = ../libfusionseq.la -lbios -lgd -lm
