@@ -4,6 +4,10 @@
 AC_PREREQ([2.67])
 AC_INIT([fusionseq], [0.7.0], [david.chen@yale.edu])
 AC_CONFIG_SRCDIR([src/geneFusions.c])
+AC_CONFIG_SRCDIR([src/cgi/geneFusions_cgi.c])
+AC_CONFIG_SRCDIR([src/test/bp2fasta.c])
+AC_CONFIG_SRCDIR([src/optional/bp2wig.c])
+AC_CONFIG_SRCDIR([scripts/Confp.pm])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])
 

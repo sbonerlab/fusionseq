@@ -75,7 +75,6 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir dist dist-all distcheck
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -119,7 +118,7 @@ AR = ar
 AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run automake-1.11
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -181,13 +180,13 @@ ROOTCFLAGS = -I/usr/local/include/root
 ROOTCINT = /usr/local/bin/rootcint
 ROOTCONF = /usr/local/bin/root-config
 ROOTEXEC = /usr/local/bin/root
-ROOTGLIBS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lGui
+ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTINCDIR = /usr/local/include/root
 ROOTLIBDIR = /usr/local/lib/root
-ROOTLIBS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread
+ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTRPATH = /usr/local/lib/root
-ROOTSOVERSION = 5.28
-ROOTVERSION = 5.28/00c
+ROOTSOVERSION = 5.29
+ROOTVERSION = 5.29/03
 SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/bash
@@ -248,6 +247,8 @@ top_builddir = .
 top_srcdir = .
 SUBDIRS = src
 ACLOCAL_AMFLAGS = -I m4
+DIST_SUBDIRS = src src/optional src/cgi src/test
+EXTRA_DIST = scripts default.fusionseqrc
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

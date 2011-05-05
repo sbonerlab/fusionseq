@@ -35,8 +35,7 @@ POST_UNINSTALL = :
 build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
 bin_PROGRAMS = gfr2images$(EXEEXT) gfr2bed$(EXEEXT) gfr2fasta$(EXEEXT) \
-	gfr2gff$(EXEEXT) bp2wig$(EXEEXT) \
-	plotIntraDistribution$(EXEEXT) export2mrf$(EXEEXT) \
+	gfr2gff$(EXEEXT) bp2wig$(EXEEXT) export2mrf$(EXEEXT) \
 	gfrConfidenceValueTranscript$(EXEEXT)
 subdir = src/optional
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -80,14 +79,6 @@ am_gfrConfidenceValueTranscript_OBJECTS =  \
 gfrConfidenceValueTranscript_OBJECTS =  \
 	$(am_gfrConfidenceValueTranscript_OBJECTS)
 gfrConfidenceValueTranscript_DEPENDENCIES = ../libfusionseq.la
-am_plotIntraDistribution_OBJECTS =  \
-	plotIntraDistribution-plotIntraDistribution.$(OBJEXT)
-plotIntraDistribution_OBJECTS = $(am_plotIntraDistribution_OBJECTS)
-plotIntraDistribution_DEPENDENCIES = ../libfusionseq.la
-plotIntraDistribution_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
-	$(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -111,33 +102,15 @@ LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CCLD = $(am__v_CCLD_$(V))
 am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD  " $@;
-CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CXXFLAGS) $(CXXFLAGS)
-AM_V_CXX = $(am__v_CXX_$(V))
-am__v_CXX_ = $(am__v_CXX_$(AM_DEFAULT_VERBOSITY))
-am__v_CXX_0 = @echo "  CXX   " $@;
-CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_CXXLD = $(am__v_CXXLD_$(V))
-am__v_CXXLD_ = $(am__v_CXXLD_$(AM_DEFAULT_VERBOSITY))
-am__v_CXXLD_0 = @echo "  CXXLD " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(bp2wig_SOURCES) $(export2mrf_SOURCES) $(gfr2bed_SOURCES) \
 	$(gfr2fasta_SOURCES) $(gfr2gff_SOURCES) $(gfr2images_SOURCES) \
-	$(gfrConfidenceValueTranscript_SOURCES) \
-	$(plotIntraDistribution_SOURCES)
+	$(gfrConfidenceValueTranscript_SOURCES)
 DIST_SOURCES = $(bp2wig_SOURCES) $(export2mrf_SOURCES) \
 	$(gfr2bed_SOURCES) $(gfr2fasta_SOURCES) $(gfr2gff_SOURCES) \
-	$(gfr2images_SOURCES) $(gfrConfidenceValueTranscript_SOURCES) \
-	$(plotIntraDistribution_SOURCES)
+	$(gfr2images_SOURCES) $(gfrConfidenceValueTranscript_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -148,7 +121,7 @@ AR = ar
 AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run automake-1.11
-AWK = mawk
+AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
@@ -210,13 +183,13 @@ ROOTCFLAGS = -I/usr/local/include/root
 ROOTCINT = /usr/local/bin/rootcint
 ROOTCONF = /usr/local/bin/root-config
 ROOTEXEC = /usr/local/bin/root
-ROOTGLIBS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lGui
+ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTINCDIR = /usr/local/include/root
 ROOTLIBDIR = /usr/local/lib/root
-ROOTLIBS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread
+ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTRPATH = /usr/local/lib/root
-ROOTSOVERSION = 5.28
-ROOTVERSION = 5.28/00c
+ROOTSOVERSION = 5.29
+ROOTVERSION = 5.29/03
 SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/bash
@@ -280,9 +253,6 @@ AM_CPPFLAGS = -I ../
 # -----------------------------------------------------------------------------
 # OPTIONAL
 # -----------------------------------------------------------------------------
-plotIntraDistribution_SOURCES = plotIntraDistribution.cpp
-plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
-plotIntraDistribution_LDADD = ../libfusionseq.la -lstdc++ -lbios -L/usr/local/lib/root -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lGui -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -ldl
 gfr2images_SOURCES = gfr2images.c
 gfr2images_LDADD = ../libfusionseq.la -lbios -lgd -lm
 gfr2bed_SOURCES = gfr2bed.c
@@ -300,7 +270,7 @@ gfrConfidenceValueTranscript_LDADD = ../libfusionseq.la -lbios
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .cpp .lo .o .obj
+.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -395,9 +365,6 @@ gfr2images$(EXEEXT): $(gfr2images_OBJECTS) $(gfr2images_DEPENDENCIES)
 gfrConfidenceValueTranscript$(EXEEXT): $(gfrConfidenceValueTranscript_OBJECTS) $(gfrConfidenceValueTranscript_DEPENDENCIES) 
 	@rm -f gfrConfidenceValueTranscript$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gfrConfidenceValueTranscript_OBJECTS) $(gfrConfidenceValueTranscript_LDADD) $(LIBS)
-plotIntraDistribution$(EXEEXT): $(plotIntraDistribution_OBJECTS) $(plotIntraDistribution_DEPENDENCIES) 
-	@rm -f plotIntraDistribution$(EXEEXT)
-	$(AM_V_CXXLD)$(plotIntraDistribution_LINK) $(plotIntraDistribution_OBJECTS) $(plotIntraDistribution_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -412,7 +379,6 @@ include ./$(DEPDIR)/gfr2fasta.Po
 include ./$(DEPDIR)/gfr2gff.Po
 include ./$(DEPDIR)/gfr2images.Po
 include ./$(DEPDIR)/gfrConfidenceValueTranscript.Po
-include ./$(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -437,46 +403,6 @@ include ./$(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
 #	source='$<' object='$@' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LTCOMPILE) -c -o $@ $<
-
-.cpp.o:
-	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-#	$(AM_V_CXX) \
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXXCOMPILE) -c -o $@ $<
-
-.cpp.obj:
-	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-#	$(AM_V_CXX) \
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.cpp.lo:
-	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-#	$(AM_V_CXX) \
-#	source='$<' object='$@' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(LTCXXCOMPILE) -c -o $@ $<
-
-plotIntraDistribution-plotIntraDistribution.o: plotIntraDistribution.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -MT plotIntraDistribution-plotIntraDistribution.o -MD -MP -MF $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo -c -o plotIntraDistribution-plotIntraDistribution.o `test -f 'plotIntraDistribution.cpp' || echo '$(srcdir)/'`plotIntraDistribution.cpp
-	$(AM_V_at)$(am__mv) $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
-#	$(AM_V_CXX) \
-#	source='plotIntraDistribution.cpp' object='plotIntraDistribution-plotIntraDistribution.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -c -o plotIntraDistribution-plotIntraDistribution.o `test -f 'plotIntraDistribution.cpp' || echo '$(srcdir)/'`plotIntraDistribution.cpp
-
-plotIntraDistribution-plotIntraDistribution.obj: plotIntraDistribution.cpp
-	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -MT plotIntraDistribution-plotIntraDistribution.obj -MD -MP -MF $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo -c -o plotIntraDistribution-plotIntraDistribution.obj `if test -f 'plotIntraDistribution.cpp'; then $(CYGPATH_W) 'plotIntraDistribution.cpp'; else $(CYGPATH_W) '$(srcdir)/plotIntraDistribution.cpp'; fi`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Tpo $(DEPDIR)/plotIntraDistribution-plotIntraDistribution.Po
-#	$(AM_V_CXX) \
-#	source='plotIntraDistribution.cpp' object='plotIntraDistribution-plotIntraDistribution.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(plotIntraDistribution_CXXFLAGS) $(CXXFLAGS) -c -o plotIntraDistribution-plotIntraDistribution.obj `if test -f 'plotIntraDistribution.cpp'; then $(CYGPATH_W) 'plotIntraDistribution.cpp'; else $(CYGPATH_W) '$(srcdir)/plotIntraDistribution.cpp'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

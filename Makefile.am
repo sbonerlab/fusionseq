@@ -1,6 +1,8 @@
 SUBDIRS = src
 ACLOCAL_AMFLAGS = -I m4
 
+DIST_SUBDIRS = src src/optional src/cgi src/test
+EXTRA_DIST = scripts default.fusionseqrc
 
 optional:
 	cd src/optional && $(MAKE) $(AM_MAKEFLAGS)
