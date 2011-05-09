@@ -2,6 +2,7 @@
 #include <gd.h>
 #include <gdfonts.h>
 #include <gdfontt.h>
+#include <gdfontmb.h>
 
 #include <bios/log.h>
 #include <bios/format.h>
