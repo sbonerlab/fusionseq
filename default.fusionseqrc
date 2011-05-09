@@ -1,45 +1,45 @@
-
-
-# Used by bowtie (gfrHomologyFilter.c, gfr2bpJunctions.c, validateBpJunctions.c)
-BOWTIE_INDEXES="/home2/as898/Projects/genomes/BOWTIE"
+// --------------------------------- This section is required ---------------------------------
+// Location of the bowtie indexes of the human genome and the composite model
+BOWTIE_INDEXES="/path/to/bowtie/Indexes" 
+// the subdirectory of BOWTIE_INDEXES where the human genome is indexed by bowtie-build
 BOWTIE_GENOME="hg18_nh"
-BOWTIE_COMPOSITE="hg18_knownGeneAnnotationTranscriptCompositeModel" 
+// the subdirectory of BOWTIE_INDEXES where the composite model is indexed by bowtie-build
+BOWTIE_COMPOSITE="hg18_knownGeneAnnotationTranscriptCompositeModel"
 
-# BLAT and hg18 (bp2alignment.c gfr2bpJunctions.c )
-BLAT_TWO_BIT_TO_FA="/home2/as898/bin/blat/twoBitToFa" 
-BLAT_DATA_DIR="/home2/as898/Projects/genomes/human/hg18/indexes/blat"
-BLAT_TWO_BIT_DATA_FILENAME="hg18.2bit" 
+// Pointer to the program twoBitToFa part of the blat suite
+BLAT_TWO_BIT_TO_FA="/path/to/blat/twoBitToFa" 
+// Location and filename of  the reference genome in 2bit format (to be used by blat)
+BLAT_DATA_DIR="/path/to/blat/Data/Dir"
+BLAT_TWO_BIT_DATA_FILENAME="hg18.2bit"
 
-# Genomes; Used by bowtie gfrHomologyFilter.c
-TRANSCRIPT_COMPOSITE_MODEL_DIR="/home1/lh372/DATA/genomes/human/hg18"
+// Location and name of the transcript composite model sequence and interval files
+TRANSCRIPT_COMPOSITE_MODEL_DIR="/path/to/transcript/Composite/Model"
 TRANSCRIPT_COMPOSITE_MODEL_FA_FILENAME="knownGeneAnnotationTranscriptCompositeModel.fa"
+TRANSCRIPT_COMPOSITE_MODEL_FILENAME="knownGeneAnnotationTranscriptCompositeModel.txt" 
 
-# Gene annotation (geneFusions.c gfrAddInfo.c gfrClassify.c gfrTreeFamFilter.c )
-ANNOTATION_DIR="/home2/as898/Projects/annotation"
+// location of the annotation files
+ANNOTATION_DIR="/path/to/annotationFiles" 
+// conversion of knownGenes to gene symbols, description, etc. 
+KNOWN_GENE_XREF_FILENAME="kgXref.txt" 
+// conversion of knownGenes to TreeFam
+KNOWN_GENE_TREE_FAM_FILENAME="knownToTreefam.txt" 
 
-# KnownGene annotation
-#ANNOTATION_FILENAME="knownGeneAnnotation.txt"
-KNOWN_GENE_XREF_FILENAME="kgXref.txt"
-KNOWN_GENE_TREE_FAM_FILENAME="knownToTreefam.txt"
-TRANSCRIPT_COMPOSITE_MODEL_FILENAME="knownGeneAnnotationTranscriptCompositeModel.txt"
+// Location and filename of the ribosomal library
+RIBOSOMAL_DIR="/path/to/ribosomal/Dir"
+RIBOSOMAL_FILENAME="ribosomal.2bit"
 
-# Used by gfrRibosomal.c
-RIBOSOMAL_DIR="/home2/as898/Projects/genomes/ribosomal"
-RIBOSOMAL_FILENAME="ribosomal_GRCh37.2bit" 
-
-# Used by geneFusions_cgi.c, showDetails_cgi.c, singleLocus_cgi.c, findFusionPartner_cgi.c
-WEB_URL_CGI="http://dynamic.gersteinlab.org/people/asboner/"
-#WEB_URL_CGI="http://dynamic.gersteinlab.org/people/asboner/fusionSeqPaper"
-WEB_DATA_DIR="/home/asboner/public_html/RNASeq"
-#WEB_DATA_DIR="/home/asboner/public_html/FusionSeq"
-WEB_DATA_LINK="http://homes.gersteinlab.org/people/asboner/RNASeq"
-#WEB_DATA_LINK="http://homes.gersteinlab.org/people/asboner/FusionSeq"
-UCSC_GENOME_BROWSER_FLANKING_REGION=500
-
-
-#Used by SeqViz: singleLocus_cgi.c sqvCircos.c sqvWeb.c sqvUtil.c
-WEB_PUB_DIR="http://homes.gersteinlab.org/people/asboner/web"
-WEB_SDATA_DIR="/home/asboner/public_html/structdata"
-#define WEB_CIRCOS_DIR="/home/asboner/circos-0.49"
-
-
+// ----------------------- This section is optional: visualization tools -------------------------
+// URL of the cgi directory on the web server
+WEB_URL_CGI="http://cgiURL" 
+// location of the data directory on the web server, as seen from the web server
+WEB_DATA_DIR="/path/to/data" 
+// URL of the data directory on the web server
+WEB_DATA_LINK="http://dataURL" 
+// Number of nucleotides flanking the region (for UCSC Genome Browser)
+UCSC_GENOME_BROWSER_FLANKING_REGION=500 
+// URL of the public website (non cgi)
+WEB_PUB_DIR="http://publicURL" 
+// Location of the structural data for Circos
+WEB_SDATA_DIR="/path/to/structural/Data/Circos" 
+// Location of Circos installation
+WEB_CIRCOS_DIR="/path/to/circos" 
