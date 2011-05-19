@@ -40,11 +40,11 @@ bin_PROGRAMS = gfr2images$(EXEEXT) gfr2bed$(EXEEXT) gfr2fasta$(EXEEXT) \
 subdir = src/optional
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_gd.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/root.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_all_static.m4 \
+	$(top_srcdir)/m4/ax_check_gd.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/root.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -114,19 +114,19 @@ DIST_SOURCES = $(bp2wig_SOURCES) $(export2mrf_SOURCES) \
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/as898/bioinfo/fusionSeq/missing --run aclocal-1.11
-AMTAR = ${SHELL} /home/as898/bioinfo/fusionSeq/missing --run tar
-AM_DEFAULT_VERBOSITY = 0
+ACLOCAL = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run aclocal-1.11
+AMTAR = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run tar
+AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /home/as898/bioinfo/fusionSeq/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/as898/bioinfo/fusionSeq/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/as898/bioinfo/fusionSeq/missing --run automake-1.11
+AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run automake-1.11
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
 CPP = gcc -E
-CPPFLAGS = -I/net/gerstein/common_libraries/gsl-1.14/include -I/net/gerstein/common_libraries/gd-2.0.35/include -I/home/as898/bioinfo/libbios/include -I/home/as898/bioinfo/libmrf/include -I/net/gerstein/common_libraries/root/include
+CPPFLAGS = 
 CXX = g++
 CXXCPP = g++ -E
 CXXDEPMODE = depmode=gcc3
@@ -144,7 +144,7 @@ EXEEXT =
 FGREP = /bin/grep -F
 GDLIB_CONFIG = /usr/bin/gdlib-config
 GD_CFLAGS = -I/usr/include
-GD_LDFLAGS = -L/usr/lib64
+GD_LDFLAGS = -L/usr/lib/x86_64-linux-gnu -L/usr/lib/x86_64-linux-gnu -Wl,-Bsymbolic-functions
 GD_LIBS = -lgd -lXpm -lX11 -ljpeg -lfontconfig -lfreetype -lpng12 -lz -lm
 GREP = /bin/grep
 INSTALL = /usr/bin/install -c
@@ -153,19 +153,20 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
-LDFLAGS = -L/net/gerstein/common_libraries/gsl-1.14/lib -L/net/gerstein/common_libraries/gd-2.0.35/lib -L/home/as898/bioinfo/libbios/lib -L/home/as898/bioinfo/libmrf/lib -L/net/gerstein/common_libraries/root/lib
-LIBOBJS =  ${LIBOBJDIR}malloc$U.o ${LIBOBJDIR}realloc$U.o
+LDFLAGS = 
+LIBOBJS = 
 LIBS = -lmrf -lbios -lgsl -lgslcblas -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
-LTLIBOBJS =  ${LIBOBJDIR}malloc$U.lo ${LIBOBJDIR}realloc$U.lo
-MAKEINFO = ${SHELL} /home/as898/bioinfo/fusionSeq/missing --run makeinfo
+LTLIBOBJS = 
+MAKEINFO = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
+OTHERLDFLAGS = -all-static
 OTOOL = 
 OTOOL64 = 
 PACKAGE = fusionseq
@@ -179,26 +180,27 @@ PATH_SEPARATOR = :
 RANLIB = ranlib
 ROOTAUXCFLAGS = -pthread -m64
 ROOTAUXLIBS = -pthread -lm -ldl -rdynamic
-ROOTCFLAGS = -I/net/gerstein/common_libraries/root/include
-ROOTCINT = /net/gerstein/common_libraries/root/bin/rootcint
-ROOTCONF = /net/gerstein/common_libraries/root/bin/root-config
-ROOTEXEC = /net/gerstein/common_libraries/root/bin/root
-ROOTGLIBS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread -lGui
-ROOTINCDIR = /net/gerstein/common_libraries/root/include
-ROOTLIBDIR = /net/gerstein/common_libraries/root/lib
-ROOTLIBS = -lCore -lCint -lRIO -lNet -lHist -lGraf -lGraf3d -lGpad -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lThread
-ROOTRPATH = /net/gerstein/common_libraries/root/lib
-ROOTSOVERSION = 5.27
-ROOTVERSION = 5.27/06
+ROOTCFLAGS = -I/usr/local/include/root
+ROOTCINT = /usr/local/bin/rootcint
+ROOTCONF = /usr/local/bin/root-config
+ROOTEXEC = /usr/local/bin/root
+ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
+ROOTINCDIR = /usr/local/include/root
+ROOTLDFLAGS = -L/usr/local/lib/root -lcurses -lRoot -lpcre
+ROOTLIBDIR = /usr/local/lib/root
+ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
+ROOTRPATH = /usr/local/lib/root
+ROOTSOVERSION = 5.29
+ROOTVERSION = 5.29/03
 SED = /bin/sed
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.7.0
-abs_builddir = /home/as898/bioinfo/fusionSeq/src/optional
-abs_srcdir = /home/as898/bioinfo/fusionSeq/src/optional
-abs_top_builddir = /home/as898/bioinfo/fusionSeq
-abs_top_srcdir = /home/as898/bioinfo/fusionSeq
+abs_builddir = /home/dzc/Work/bioinfo/fusionSeq/src/optional
+abs_srcdir = /home/dzc/Work/bioinfo/fusionSeq/src/optional
+abs_top_builddir = /home/dzc/Work/bioinfo/fusionSeq
+abs_top_srcdir = /home/dzc/Work/bioinfo/fusionSeq
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 ac_ct_DUMPBIN = 
@@ -227,7 +229,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/as898/bioinfo/fusionSeq/install-sh
+install_sh = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -237,7 +239,7 @@ mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /home/as898/bioinfo/fusionSeq
+prefix = /home/dzc/tmp/test_static2
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -254,19 +256,19 @@ AM_CPPFLAGS = -I ../
 # OPTIONAL
 # -----------------------------------------------------------------------------
 gfr2images_SOURCES = gfr2images.c
-gfr2images_LDADD = ../libfusionseq.la -lbios -lgd -lm
+gfr2images_LDADD = ../libfusionseq.la -all-static -lbios -lgd -lm
 gfr2bed_SOURCES = gfr2bed.c
-gfr2bed_LDADD = ../libfusionseq.la -lbios
+gfr2bed_LDADD = ../libfusionseq.la -all-static -lbios
 gfr2fasta_SOURCES = gfr2fasta.c
-gfr2fasta_LDADD = ../libfusionseq.la -lbios
+gfr2fasta_LDADD = ../libfusionseq.la -all-static -lbios
 gfr2gff_SOURCES = gfr2gff.c
-gfr2gff_LDADD = ../libfusionseq.la -lbios
+gfr2gff_LDADD = ../libfusionseq.la -all-static -lbios
 bp2wig_SOURCES = bp2wig.c
-bp2wig_LDADD = ../libfusionseq.la -lbios
+bp2wig_LDADD = ../libfusionseq.la -all-static -lbios
 export2mrf_SOURCES = export2mrf.c
-export2mrf_LDADD = ../libfusionseq.la -lbios
+export2mrf_LDADD = ../libfusionseq.la -all-static -lbios
 gfrConfidenceValueTranscript_SOURCES = gfrConfidenceValueTranscript.c
-gfrConfidenceValueTranscript_LDADD = ../libfusionseq.la -lbios
+gfrConfidenceValueTranscript_LDADD = ../libfusionseq.la -all-static -lbios
 all: all-am
 
 .SUFFIXES:

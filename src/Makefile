@@ -59,11 +59,11 @@ subdir = src
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_gd.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/root.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_all_static.m4 \
+	$(top_srcdir)/m4/ax_check_gd.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/root.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -264,7 +264,7 @@ CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run aclocal-1.11
 AMTAR = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run tar
-AM_DEFAULT_VERBOSITY = 0
+AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
@@ -314,6 +314,7 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
+OTHERLDFLAGS = -all-static
 OTOOL = 
 OTOOL64 = 
 PACKAGE = fusionseq
@@ -333,6 +334,7 @@ ROOTCONF = /usr/local/bin/root-config
 ROOTEXEC = /usr/local/bin/root
 ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTINCDIR = /usr/local/include/root
+ROOTLDFLAGS = -L/usr/local/lib/root -lcurses -lRoot -lpcre
 ROOTLIBDIR = /usr/local/lib/root
 ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTRPATH = /usr/local/lib/root
@@ -385,7 +387,7 @@ mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /usr/local
+prefix = /home/dzc/tmp/test_static2
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -404,7 +406,7 @@ libfusionseq_la_SOURCES = bp.c \
 			  sqvWeb.c \
 			  util.c
 
-libfusionseq_la_LIBADD = -lm -lbios
+libfusionseq_la_LIBADD = -lm -lbios -all-static
 include_HEADERS = bp.h \
 		  gfr.h \
 		  sqvCircos.h \
@@ -417,56 +419,56 @@ include_HEADERS = bp.h \
 # CORE: Finding candidate fusions
 # -----------------------------------------------------------------------------
 geneFusions_SOURCES = geneFusions.c
-geneFusions_LDADD = libfusionseq.la -lbios -lmrf -lm
+geneFusions_LDADD = libfusionseq.la -all-static -lbios -lmrf -lm 
 gfrExpressionConsistencyFilter_SOURCES = gfrExpressionConsistencyFilter.c
-gfrExpressionConsistencyFilter_LDADD = libfusionseq.la -lbios -lm
+gfrExpressionConsistencyFilter_LDADD = libfusionseq.la -all-static -lbios -lm 
 gfrAnnotationConsistencyFilter_SOURCES = gfrAnnotationConsistencyFilter.c
-gfrAnnotationConsistencyFilter_LDADD = libfusionseq.la -lbios -lm
+gfrAnnotationConsistencyFilter_LDADD = libfusionseq.la -all-static -lbios -lm
 gfrRibosomalFilter_SOURCES = gfrRibosomalFilter.c
-gfrRibosomalFilter_LDADD = libfusionseq.la -lbios
+gfrRibosomalFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrMitochondrialFilter_SOURCES = gfrMitochondrialFilter.c
-gfrMitochondrialFilter_LDADD = libfusionseq.la -lbios
+gfrMitochondrialFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrLargeScaleHomologyFilter_SOURCES = gfrLargeScaleHomologyFilter.c
-gfrLargeScaleHomologyFilter_LDADD = libfusionseq.la -lbios
+gfrLargeScaleHomologyFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrSmallScaleHomologyFilter_SOURCES = gfrSmallScaleHomologyFilter.c
-gfrSmallScaleHomologyFilter_LDADD = libfusionseq.la -lbios
+gfrSmallScaleHomologyFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrAbnormalInsertSizeFilter_SOURCES = gfrAbnormalInsertSizeFilter.c
-gfrAbnormalInsertSizeFilter_LDADD = libfusionseq.la -lbios
+gfrAbnormalInsertSizeFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrPCRFilter_SOURCES = gfrPCRFilter.c
-gfrPCRFilter_LDADD = libfusionseq.la -lbios
+gfrPCRFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrBlackListFilter_SOURCES = gfrBlackListFilter.c
-gfrBlackListFilter_LDADD = libfusionseq.la -lbios
+gfrBlackListFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrProximityFilter_SOURCES = gfrProximityFilter.c
-gfrProximityFilter_LDADD = libfusionseq.la -lbios
+gfrProximityFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrAddInfo_SOURCES = gfrAddInfo.c
-gfrAddInfo_LDADD = libfusionseq.la -lbios
+gfrAddInfo_LDADD = libfusionseq.la -all-static -lbios
 gfrConfidenceValues_SOURCES = gfrConfidenceValues.c
-gfrConfidenceValues_LDADD = libfusionseq.la -lbios -lmrf
+gfrConfidenceValues_LDADD = libfusionseq.la -all-static -lbios -lmrf
 gfrRepeatMaskerFilter_SOURCES = gfrRepeatMaskerFilter.c
-gfrRepeatMaskerFilter_LDADD = libfusionseq.la -lbios -lm
+gfrRepeatMaskerFilter_LDADD = libfusionseq.la -all-static -lbios -lm
 gfrCountPairTypes_SOURCES = gfrCountPairTypes.c
-gfrCountPairTypes_LDADD = libfusionseq.la -lbios -lm
+gfrCountPairTypes_LDADD = libfusionseq.la -all-static -lbios -lm
 gfrSpliceJunctionFilter_SOURCES = gfrSpliceJunctionFilter.c
-gfrSpliceJunctionFilter_LDADD = libfusionseq.la -lbios
+gfrSpliceJunctionFilter_LDADD = libfusionseq.la -all-static -lbios
 gfrClassify_SOURCES = gfrClassify.c
-gfrClassify_LDADD = libfusionseq.la -lbios -lm
+gfrClassify_LDADD = libfusionseq.la -all-static -lbios -lm
 gfrWhiteListFilter_SOURCES = gfrWhiteListFilter.c
-gfrWhiteListFilter_LDADD = libfusionseq.la -lbios
+gfrWhiteListFilter_LDADD = libfusionseq.la -all-static -lbios
 
 # -----------------------------------------------------------------------------
 # CORE: Identifying sequences of the junction
 # -----------------------------------------------------------------------------
 gfr2bpJunctions_SOURCES = gfr2bpJunctions.c
-gfr2bpJunctions_LDADD = libfusionseq.la -lbios -lm
+gfr2bpJunctions_LDADD = libfusionseq.la -all-static -lbios -lm
 bowtie2bp_SOURCES = bowtie2bp.c
-bowtie2bp_LDADD = libfusionseq.la -lbios
+bowtie2bp_LDADD = libfusionseq.la -all-static -lbios
 validateBpJunctions_SOURCES = validateBpJunctions.c
-validateBpJunctions_LDADD = libfusionseq.la -lbios
+validateBpJunctions_LDADD = libfusionseq.la -all-static -lbios
 bpFilter_SOURCES = bpFilter.cpp
 bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
-bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L/usr/local/lib/root -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint  -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -ldl
+bpFilter_LDADD = libfusionseq.la -all-static -lstdc++ -lbios -L/usr/local/lib/root -lcurses -lRoot -lpcre
 bp2alignment_SOURCES = bp2alignment.c
-bp2alignment_LDADD = libfusionseq.la -lbios
+bp2alignment_LDADD = libfusionseq.la -all-static -lbios
 all: all-am
 
 .SUFFIXES:

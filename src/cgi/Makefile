@@ -38,11 +38,11 @@ EXTRA_PROGRAMS = geneFusions_cgi$(EXEEXT) showDetails_cgi$(EXEEXT) \
 subdir = src/cgi
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_gd.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/root.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_all_static.m4 \
+	$(top_srcdir)/m4/ax_check_gd.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/root.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -100,7 +100,7 @@ CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run aclocal-1.11
 AMTAR = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run tar
-AM_DEFAULT_VERBOSITY = 0
+AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
@@ -150,6 +150,7 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
+OTHERLDFLAGS = -all-static
 OTOOL = 
 OTOOL64 = 
 PACKAGE = fusionseq
@@ -169,6 +170,7 @@ ROOTCONF = /usr/local/bin/root-config
 ROOTEXEC = /usr/local/bin/root
 ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTINCDIR = /usr/local/include/root
+ROOTLDFLAGS = -L/usr/local/lib/root -lcurses -lRoot -lpcre
 ROOTLIBDIR = /usr/local/lib/root
 ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTRPATH = /usr/local/lib/root
@@ -221,7 +223,7 @@ mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /usr/local
+prefix = /home/dzc/tmp/test_static2
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin
@@ -239,13 +241,13 @@ AM_CPPFLAGS = -I ../
 # CGI
 # -----------------------------------------------------------------------------
 geneFusions_cgi_SOURCES = geneFusions_cgi.c
-geneFusions_cgi_LDADD = ../libfusionseq.la -lbios
+geneFusions_cgi_LDADD = ../libfusionseq.la -all-static -lbios
 showDetails_cgi_SOURCES = showDetails_cgi.c
-showDetails_cgi_LDADD = ../libfusionseq.la -lbios
+showDetails_cgi_LDADD = ../libfusionseq.la -all-static -lbios
 seqViz_cgi_SOURCES = seqViz_cgi.c
-seqViz_cgi_LDADD = ../libfusionseq.la -lbios -lmrf
+seqViz_cgi_LDADD = ../libfusionseq.la -all-static -lbios -lmrf
 findFusionPartner_cgi_SOURCES = findFusionPartner_cgi.c
-findFusionPartner_cgi_LDADD = ../libfusionseq.la -lbios
+findFusionPartner_cgi_LDADD = ../libfusionseq.la -all-static -lbios
 all: all-am
 
 .SUFFIXES:

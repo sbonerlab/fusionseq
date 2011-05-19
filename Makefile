@@ -40,11 +40,11 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	TODO config.guess config.sub depcomp install-sh ltmain.sh \
 	missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_check_gd.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/root.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_all_static.m4 \
+	$(top_srcdir)/m4/ax_check_gd.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/root.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -113,7 +113,7 @@ distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run aclocal-1.11
 AMTAR = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run tar
-AM_DEFAULT_VERBOSITY = 0
+AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AUTOCONF = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/dzc/Work/bioinfo/fusionSeq/missing --run autoheader
@@ -163,6 +163,7 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
+OTHERLDFLAGS = -all-static
 OTOOL = 
 OTOOL64 = 
 PACKAGE = fusionseq
@@ -182,6 +183,7 @@ ROOTCONF = /usr/local/bin/root-config
 ROOTEXEC = /usr/local/bin/root
 ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTINCDIR = /usr/local/include/root
+ROOTLDFLAGS = -L/usr/local/lib/root -lcurses -lRoot -lpcre
 ROOTLIBDIR = /usr/local/lib/root
 ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTRPATH = /usr/local/lib/root
@@ -234,7 +236,7 @@ mandir = ${datarootdir}/man
 mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /usr/local
+prefix = /home/dzc/tmp/test_static2
 program_transform_name = s,x,x,
 psdir = ${docdir}
 sbindir = ${exec_prefix}/sbin

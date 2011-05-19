@@ -1,0 +1,319 @@
+Status on building static binaries for FusionSeq:
+
+[1]
+Read about building static libraries. Some notes:
+ - Dynamic libaries (.so) cannot be used for linking statically because the ELF
+   format for .so files is specifically designed to be dynamically linked. The
+   entrypoints for .so's cannot be used for static linking
+ - There are options for "including" dynamic libraries with your executible:
+   stratifier and Ermine. However, these are not recommended because:
+   - stratifier does not work with kernels with stack or VDSO randomization,
+     which is used for enhanced security
+   - Ermine can handle randomized stack or VDSO but IS NOT FREE
+ - Static linking requires that the static libraries (.a) be installed. ld
+   just needs to be invoked with -all-static to link with static native or 
+   libtool libraries whenever possible
+
+Sources:
+http://stackoverflow.com/questions/725472/static-link-of-shared-library-function-in-gcc
+http://statifier.sourceforge.net/
+http://magicermine.com/
+
+Checked my system to see which static libraries are installed:
+
+dzc@cardinal:/usr/local/lib/root& ls /usr/lib | grep "\.a"
+libasprintf.a
+libbfd.a
+libbz2.a
+libcrypto.a
+libcurses.a
+libdrvproxy.a
+libdw.a
+libelf.a
+libfftw3.a
+libfftw3f.a
+libfftw3f_threads.a
+libfftw3l.a
+libfftw3l_threads.a
+libfftw3_threads.a
+libform.a
+libgd.a
+libgettextpo.a
+libGLU.a
+libgsl.a
+libgslcblas.a
+libiberty.a
+libiberty_pic.a
+libicudata.a
+libicui18n.a
+libicuio.a
+libicule.a
+libiculx.a
+libicutest.a
+libicutu.a
+libicuuc.a
+libiodbc.a
+libiodbcadm.a
+libiodbcinst.a
+libltdl.a
+libmenu.a
+libmysqlclient.a
+libmysqlclient_r.a
+libncurses.a
+libncurses++.a
+libopcodes.a
+libpanel.a
+libpython2.7.a
+libQtUiTools.a
+libruby1.8-static.a
+libssl.a
+libtermcap.a
+libtic.a
+libxerces-c.a
+libxml2.a
+libXNVCtrl.a
+libXpm.a
+libyelp.a
+
+For ROOT, I found that running make static after running make will produce the
+following static ROOT libraries:
+
+dzc@cardinal:/usr/local/lib/root& ls -l | grep "\.a"
+-rw-r--r-- 1 dzc  dzc     649434 2011-05-05 12:59 libAfterImage.a
+-rw-r--r-- 1 dzc  dzc     208786 2011-05-05 12:14 libpcre.a
+-rw-r--r-- 1 dzc  dzc  143107714 2011-05-18 23:56 libRoot.a
+
+ONE PROBLEM HERE: libRoot.a is over 140 MB!!!!!!!
+And the executable linked to this will be even larger!
+I'm going to go ahead and try to do pure static linking anyway, and then see if
+we can work around this later.
+
+I created a m4 macro called AX_ALL_STATIC which defines a --enable-all-static
+configure option to build all executibles using static linking. While running
+make, I got this:
+
+g++ -DHAVE_CONFIG_H -I. -I..    -D_REENTRANT -pthread -m64 -g -O2 -MT bpFilter-bpFilter.o -MD -MP -MF .deps/bpFilter-bpFilter.Tpo -c -o bpFilter-bpFilter.o `test -f 'bpFilter.cpp' || echo './'`bpFilter.cpp
+bpFilter.cpp: In function ‘int main(int, char**)’:
+bpFilter.cpp:38:118: warning: deprecated conversion from string constant to ‘char*’
+mv -f .deps/bpFilter-bpFilter.Tpo .deps/bpFilter-bpFilter.Po
+/bin/bash ../libtool  --tag=CXX   --mode=link g++ -D_REENTRANT -pthread -m64 -g -O2   -o bpFilter bpFilter-bpFilter.o libfusionseq.la -static -lstdc++ -lbios -L/usr/local/lib/root -lRoot -lpcre -lmrf -lbios -lgsl -lgslcblas -lm 
+libtool: link: g++ -D_REENTRANT -pthread -m64 -g -O2 -o bpFilter bpFilter-bpFilter.o  ./.libs/libfusionseq.a -lstdc++ -L/usr/local/lib/root -lRoot -lpcre -lmrf -lbios -lgsl -lgslcblas -lm -pthread
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::StackTrace()':
+TUnixSystem.cxx:(.text+0x5ad7): undefined reference to `dladdr'
+/usr/local/lib/root/libRoot.a(ZDeflate.o): In function `R__zip':
+ZDeflate.c:(.text+0x21a1): undefined reference to `deflateInit_'
+ZDeflate.c:(.text+0x21cf): undefined reference to `deflate'
+ZDeflate.c:(.text+0x21dc): undefined reference to `deflateEnd'
+ZDeflate.c:(.text+0x21e9): undefined reference to `deflateEnd'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__shl_findsym':
+shl.cxx:(.text+0x310): undefined reference to `dlsym'
+shl.cxx:(.text+0x318): undefined reference to `dlerror'
+shl.cxx:(.text+0x31d): undefined reference to `dlerror'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__dlclose':
+shl.cxx:(.text+0x355): undefined reference to `dlclose'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__dladdr':
+shl.cxx:(.text+0x361e): undefined reference to `dladdr'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__dlopen':
+shl.cxx:(.text+0x37a4): undefined reference to `dlopen'
+shl.cxx:(.text+0x37b1): undefined reference to `dlerror'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_deletechars(EditLine_t*, int)':
+term.cxx:(.text+0x90c): undefined reference to `tgoto'
+term.cxx:(.text+0x91d): undefined reference to `tputs'
+term.cxx:(.text+0x93e): undefined reference to `tputs'
+term.cxx:(.text+0x972): undefined reference to `tputs'
+term.cxx:(.text+0x99d): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_set(EditLine_t*, char const*)':
+term.cxx:(.text+0x1266): undefined reference to `tgetent'
+term.cxx:(.text+0x133e): undefined reference to `tgetflag'
+term.cxx:(.text+0x1354): undefined reference to `tgetflag'
+term.cxx:(.text+0x136a): undefined reference to `tgetflag'
+term.cxx:(.text+0x1380): undefined reference to `tgetflag'
+term.cxx:(.text+0x1396): undefined reference to `tgetflag'
+/usr/local/lib/root/libRoot.a(term.o):term.cxx:(.text+0x13ac): more undefined references to `tgetflag' follow
+/usr/local/lib/root/libRoot.a(term.o): In function `term_set(EditLine_t*, char const*)':
+term.cxx:(.text+0x13c2): undefined reference to `tgetnum'
+term.cxx:(.text+0x13d8): undefined reference to `tgetnum'
+term.cxx:(.text+0x13f6): undefined reference to `tgetstr'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_init_color(EditLine_t*)':
+term.cxx:(.text+0x1607): undefined reference to `setupterm'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_beep(EditLine_t*)':
+term.cxx:(.text+0x1ce5): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_clear_screen(EditLine_t*)':
+term.cxx:(.text+0x1d37): undefined reference to `tputs'
+term.cxx:(.text+0x1d6e): undefined reference to `tputs'
+term.cxx:(.text+0x1d8b): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_clear_EOL(EditLine_t*, int)':
+term.cxx:(.text+0x1dfd): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_insertwrite(EditLine_t*, char const*, ElColor_t*, int)':
+term.cxx:(.text+0x1f8e): undefined reference to `tgoto'
+term.cxx:(.text+0x1fa0): undefined reference to `tputs'
+term.cxx:(.text+0x1fef): undefined reference to `tputs'
+term.cxx:(.text+0x203b): undefined reference to `tputs'
+term.cxx:(.text+0x2057): undefined reference to `tputs'
+term.cxx:(.text+0x207f): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o):term.cxx:(.text+0x20bf): more undefined references to `tputs' follow
+/usr/local/lib/root/libRoot.a(term.o): In function `term_move_to_char(EditLine_t*, int)':
+term.cxx:(.text+0x2166): undefined reference to `tgoto'
+term.cxx:(.text+0x2178): undefined reference to `tputs'
+term.cxx:(.text+0x21af): undefined reference to `tgoto'
+term.cxx:(.text+0x21c0): undefined reference to `tputs'
+term.cxx:(.text+0x2266): undefined reference to `tgoto'
+term.cxx:(.text+0x2277): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_move_to_line(EditLine_t*, int)':
+term.cxx:(.text+0x23bb): undefined reference to `tgoto'
+term.cxx:(.text+0x23cc): undefined reference to `tputs'
+term.cxx:(.text+0x2440): undefined reference to `tgoto'
+term.cxx:(.text+0x2452): undefined reference to `tputs'
+term.cxx:(.text+0x248b): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_echotc(EditLine_t*, int, char const**)':
+term.cxx:(.text+0x2da6): undefined reference to `tgetstr'
+term.cxx:(.text+0x2ec8): undefined reference to `tputs'
+term.cxx:(.text+0x2fc3): undefined reference to `tgoto'
+term.cxx:(.text+0x2fd7): undefined reference to `tputs'
+term.cxx:(.text+0x31ca): undefined reference to `tgoto'
+term.cxx:(.text+0x31dc): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::GetTermStr(char const*)':
+TTermManip.cxx:(.text+0x38a): undefined reference to `tigetstr'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::GetTermNum(char const*)':
+TTermManip.cxx:(.text+0x3e0): undefined reference to `tigetnum'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::WriteTerm(char*)':
+TTermManip.cxx:(.text+0x452): undefined reference to `tparm'
+TTermManip.cxx:(.text+0x462): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::WriteTerm(char*, int)':
+TTermManip.cxx:(.text+0x663): undefined reference to `tparm'
+TTermManip.cxx:(.text+0x673): undefined reference to `tputs'
+collect2: ld returned 1 exit status
+make[2]: *** [bpFilter] Error 1
+make[2]: Leaving directory `/home/dzc/Work/bioinfo/fusionSeq/src'
+make[1]: *** [all-recursive] Error 1
+make[1]: Leaving directory `/home/dzc/Work/bioinfo/fusionSeq'
+make: *** [all] Error 2
+
+tgoto, tputs, tparm, tigetstr, tigetstr are in libcurses, and I do have 
+libcurses.a in /usr/lib. ROOT's configure script does not have an
+--enable-static option so I believe it does not link with dependencies
+statically anyway. Trying to link the FusionSeq executible with libcurses 
+statically doesn't seem to work either and now I get this:
+
+g++ -DHAVE_CONFIG_H -I. -I..    -D_REENTRANT -pthread -m64 -g -O2 -MT bpFilter-bpFilter.o -MD -MP -MF .deps/bpFilter-bpFilter.Tpo -c -o bpFilter-bpFilter.o `test -f 'bpFilter.cpp' || echo './'`bpFilter.cpp
+bpFilter.cpp: In function ‘int main(int, char**)’:
+bpFilter.cpp:38:118: warning: deprecated conversion from string constant to ‘char*’
+mv -f .deps/bpFilter-bpFilter.Tpo .deps/bpFilter-bpFilter.Po
+/bin/bash ../libtool  --tag=CXX   --mode=link g++ -D_REENTRANT -pthread -m64 -g -O2   -o bpFilter bpFilter-bpFilter.o libfusionseq.la -all-static -lstdc++ -lbios -L/usr/local/lib/root -lcurses -lRoot -lpcre -lmrf -lbios -lgsl -lgslcblas -lm 
+libtool: link: g++ -D_REENTRANT -pthread -m64 -g -O2 -o bpFilter bpFilter-bpFilter.o -static  ./.libs/libfusionseq.a -lstdc++ -L/usr/local/lib/root -lcurses -lRoot -lpcre -lmrf -lbios -lgsl -lgslcblas -lm -pthread
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetGroupInfo(int)':
+TUnixSystem.cxx:(.text+0x3ec7): warning: Using 'getgrgid' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetGid(char const*)':
+TUnixSystem.cxx:(.text+0x1d11): warning: Using 'getgrnam' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(readline.o): In function `username_completion_function(char const*, int)':
+readline.cxx:(.text+0x13ba): warning: Using 'getpwent' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetUid(char const*)':
+TUnixSystem.cxx:(.text+0xa19): warning: Using 'getpwnam' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::UnixHomedirectory(char const*)':
+TUnixSystem.cxx:(.text+0x8370): warning: Using 'getpwuid' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(readline.o): In function `username_completion_function(char const*, int)':
+readline.cxx:(.text+0x13b5): warning: Using 'setpwent' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+readline.cxx:(.text+0x13f4): warning: Using 'endpwent' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetPeerName(int)':
+TUnixSystem.cxx:(.text+0x12b5): warning: Using 'gethostbyaddr' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetHostByName(char const*)':
+TUnixSystem.cxx:(.text+0x9d14): warning: Using 'gethostbyname' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetServiceByName(char const*)':
+TUnixSystem.cxx:(.text+0x11ea): warning: Using 'getservbyname' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::GetServiceByPort(int)':
+TUnixSystem.cxx:(.text+0x11a9): warning: Using 'getservbyport' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/usr/local/lib/root/libRoot.a(TUnixSystem.o): In function `TUnixSystem::StackTrace()':
+TUnixSystem.cxx:(.text+0x5ad7): undefined reference to `dladdr'
+/usr/local/lib/root/libRoot.a(ZDeflate.o): In function `R__zip':
+ZDeflate.c:(.text+0x21a1): undefined reference to `deflateInit_'
+ZDeflate.c:(.text+0x21cf): undefined reference to `deflate'
+ZDeflate.c:(.text+0x21dc): undefined reference to `deflateEnd'
+ZDeflate.c:(.text+0x21e9): undefined reference to `deflateEnd'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__shl_findsym':
+shl.cxx:(.text+0x310): undefined reference to `dlsym'
+shl.cxx:(.text+0x318): undefined reference to `dlerror'
+shl.cxx:(.text+0x31d): undefined reference to `dlerror'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__dlclose':
+shl.cxx:(.text+0x355): undefined reference to `dlclose'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__dladdr':
+shl.cxx:(.text+0x361e): undefined reference to `dladdr'
+/usr/local/lib/root/libRoot.a(shl.o): In function `G__dlopen':
+shl.cxx:(.text+0x37a4): undefined reference to `dlopen'
+shl.cxx:(.text+0x37b1): undefined reference to `dlerror'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_deletechars(EditLine_t*, int)':
+term.cxx:(.text+0x90c): undefined reference to `tgoto'
+term.cxx:(.text+0x91d): undefined reference to `tputs'
+term.cxx:(.text+0x93e): undefined reference to `tputs'
+term.cxx:(.text+0x972): undefined reference to `tputs'
+term.cxx:(.text+0x99d): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_set(EditLine_t*, char const*)':
+term.cxx:(.text+0x1266): undefined reference to `tgetent'
+term.cxx:(.text+0x133e): undefined reference to `tgetflag'
+term.cxx:(.text+0x1354): undefined reference to `tgetflag'
+term.cxx:(.text+0x136a): undefined reference to `tgetflag'
+term.cxx:(.text+0x1380): undefined reference to `tgetflag'
+term.cxx:(.text+0x1396): undefined reference to `tgetflag'
+/usr/local/lib/root/libRoot.a(term.o):term.cxx:(.text+0x13ac): more undefined references to `tgetflag' follow
+/usr/local/lib/root/libRoot.a(term.o): In function `term_set(EditLine_t*, char const*)':
+term.cxx:(.text+0x13c2): undefined reference to `tgetnum'
+term.cxx:(.text+0x13d8): undefined reference to `tgetnum'
+term.cxx:(.text+0x13f6): undefined reference to `tgetstr'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_init_color(EditLine_t*)':
+term.cxx:(.text+0x1607): undefined reference to `setupterm'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_beep(EditLine_t*)':
+term.cxx:(.text+0x1ce5): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_clear_screen(EditLine_t*)':
+term.cxx:(.text+0x1d37): undefined reference to `tputs'
+term.cxx:(.text+0x1d6e): undefined reference to `tputs'
+term.cxx:(.text+0x1d8b): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_clear_EOL(EditLine_t*, int)':
+term.cxx:(.text+0x1dfd): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_insertwrite(EditLine_t*, char const*, ElColor_t*, int)':
+term.cxx:(.text+0x1f8e): undefined reference to `tgoto'
+term.cxx:(.text+0x1fa0): undefined reference to `tputs'
+term.cxx:(.text+0x1fef): undefined reference to `tputs'
+term.cxx:(.text+0x203b): undefined reference to `tputs'
+term.cxx:(.text+0x2057): undefined reference to `tputs'
+term.cxx:(.text+0x207f): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o):term.cxx:(.text+0x20bf): more undefined references to `tputs' follow
+/usr/local/lib/root/libRoot.a(term.o): In function `term_move_to_char(EditLine_t*, int)':
+term.cxx:(.text+0x2166): undefined reference to `tgoto'
+term.cxx:(.text+0x2178): undefined reference to `tputs'
+term.cxx:(.text+0x21af): undefined reference to `tgoto'
+term.cxx:(.text+0x21c0): undefined reference to `tputs'
+term.cxx:(.text+0x2266): undefined reference to `tgoto'
+term.cxx:(.text+0x2277): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_move_to_line(EditLine_t*, int)':
+term.cxx:(.text+0x23bb): undefined reference to `tgoto'
+term.cxx:(.text+0x23cc): undefined reference to `tputs'
+term.cxx:(.text+0x2440): undefined reference to `tgoto'
+term.cxx:(.text+0x2452): undefined reference to `tputs'
+term.cxx:(.text+0x248b): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(term.o): In function `term_echotc(EditLine_t*, int, char const**)':
+term.cxx:(.text+0x2da6): undefined reference to `tgetstr'
+term.cxx:(.text+0x2ec8): undefined reference to `tputs'
+term.cxx:(.text+0x2fc3): undefined reference to `tgoto'
+term.cxx:(.text+0x2fd7): undefined reference to `tputs'
+term.cxx:(.text+0x31ca): undefined reference to `tgoto'
+term.cxx:(.text+0x31dc): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::GetTermStr(char const*)':
+TTermManip.cxx:(.text+0x38a): undefined reference to `tigetstr'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::GetTermNum(char const*)':
+TTermManip.cxx:(.text+0x3e0): undefined reference to `tigetnum'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::WriteTerm(char*)':
+TTermManip.cxx:(.text+0x452): undefined reference to `tparm'
+TTermManip.cxx:(.text+0x462): undefined reference to `tputs'
+/usr/local/lib/root/libRoot.a(TTermManip.o): In function `TTermManip::WriteTerm(char*, int)':
+TTermManip.cxx:(.text+0x663): undefined reference to `tparm'
+TTermManip.cxx:(.text+0x673): undefined reference to `tputs'
+collect2: ld returned 1 exit status
+make[2]: *** [bpFilter] Error 1
+make[2]: Leaving directory `/home/dzc/Work/bioinfo/fusionSeq/src'
+make[1]: *** [all-recursive] Error 1
+make[1]: Leaving directory `/home/dzc/Work/bioinfo/fusionSeq'
+make: *** [all] Error 2
+
+Apparently I also need to install the static versions of the following libraries: libz
+
+I will look more into it tomorrow. Perhaps we don't need to statically link 
+ROOT or have some way around it.

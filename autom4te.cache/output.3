@@ -10655,6 +10655,24 @@ esac
 AM_BACKSLASH='\'
 
 
+#AC_DEFUN([AX_ALL_STATIC], [
+#	AC_ENABLE_ARGS(all-static, 
+#		       AC_HELP_STRING([--enable-all-static], [Build statically-linked binaries]), 
+#		       CC_ALL_STATIC=yes,
+#		       CC_ALL_STATIC=no)
+#
+#	if test "$CC_ALL_STATIC" = yes; then
+#		AX_LDFLAGS = -static
+#		ROOT_LDFLAGS = -L$ROOTLIBDIR -lRoot
+#	else
+#		AX_LDFLAGS = 
+#		ROOT_LDFLAGS = -L$ROOTLIBDIR $ROOTGLIBS $ROOTLIBS -ldl
+#	fi
+#
+#	AC_SUBST(ROOT_LDFLAGS)
+#])
+
+
 # Checks for programs.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
