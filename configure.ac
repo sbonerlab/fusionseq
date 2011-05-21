@@ -21,7 +21,6 @@ AC_PROG_CC
 AC_PROG_CXX
 ROOT_PATH([], [], [AC_MSG_ERROR([Cannot find [ROOT]])])
 AC_PROG_LIBTOOL
-AX_ALL_STATIC
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [log], [], [AC_MSG_ERROR([Cannot find standard math library])])

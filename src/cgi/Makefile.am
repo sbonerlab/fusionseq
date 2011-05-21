@@ -16,13 +16,13 @@ AM_CPPFLAGS = -I ../
 # -----------------------------------------------------------------------------
 
 geneFusions_cgi_SOURCES = geneFusions_cgi.c
-geneFusions_cgi_LDADD = ../libfusionseq.la @OTHERLDFLAGS@ -lbios
+geneFusions_cgi_LDADD = ../libfusionseq.la -lbios
 
 showDetails_cgi_SOURCES = showDetails_cgi.c
-showDetails_cgi_LDADD = ../libfusionseq.la @OTHERLDFLAGS@ -lbios
+showDetails_cgi_LDADD = ../libfusionseq.la -lbios
 
 seqViz_cgi_SOURCES = seqViz_cgi.c
-seqViz_cgi_LDADD = ../libfusionseq.la @OTHERLDFLAGS@ -lbios -lmrf
+seqViz_cgi_LDADD = ../libfusionseq.la -lbios -lmrf
 
 findFusionPartner_cgi_SOURCES = findFusionPartner_cgi.c
-findFusionPartner_cgi_LDADD = ../libfusionseq.la @OTHERLDFLAGS@ -lbios
+findFusionPartner_cgi_LDADD = ../libfusionseq.la -lbios

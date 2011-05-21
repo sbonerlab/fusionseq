@@ -10,7 +10,7 @@ libfusionseq_la_SOURCES = bp.c \
 			  sqvWeb.c \
 			  util.c
 
-libfusionseq_la_LIBADD = -lm -lbios @OTHERLDFLAGS@
+libfusionseq_la_LIBADD = -lm -lbios 
 
 include_HEADERS = bp.h \
 		  gfr.h \
@@ -52,76 +52,76 @@ bin_PROGRAMS = geneFusions \
 # -----------------------------------------------------------------------------
 
 geneFusions_SOURCES = geneFusions.c
-geneFusions_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lmrf -lm 
+geneFusions_LDADD = libfusionseq.la  -lbios -lmrf -lm 
 
 gfrExpressionConsistencyFilter_SOURCES = gfrExpressionConsistencyFilter.c
-gfrExpressionConsistencyFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lm 
+gfrExpressionConsistencyFilter_LDADD = libfusionseq.la  -lbios -lm 
 
 gfrAnnotationConsistencyFilter_SOURCES = gfrAnnotationConsistencyFilter.c
-gfrAnnotationConsistencyFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lm
+gfrAnnotationConsistencyFilter_LDADD = libfusionseq.la  -lbios -lm
 
 gfrRibosomalFilter_SOURCES = gfrRibosomalFilter.c
-gfrRibosomalFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrRibosomalFilter_LDADD = libfusionseq.la  -lbios
 
 gfrMitochondrialFilter_SOURCES = gfrMitochondrialFilter.c
-gfrMitochondrialFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrMitochondrialFilter_LDADD = libfusionseq.la  -lbios
 
 gfrLargeScaleHomologyFilter_SOURCES = gfrLargeScaleHomologyFilter.c
-gfrLargeScaleHomologyFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrLargeScaleHomologyFilter_LDADD = libfusionseq.la  -lbios
 
 gfrSmallScaleHomologyFilter_SOURCES = gfrSmallScaleHomologyFilter.c
-gfrSmallScaleHomologyFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrSmallScaleHomologyFilter_LDADD = libfusionseq.la  -lbios
 
 gfrAbnormalInsertSizeFilter_SOURCES = gfrAbnormalInsertSizeFilter.c
-gfrAbnormalInsertSizeFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrAbnormalInsertSizeFilter_LDADD = libfusionseq.la  -lbios
 
 gfrPCRFilter_SOURCES = gfrPCRFilter.c
-gfrPCRFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrPCRFilter_LDADD = libfusionseq.la  -lbios
 
 gfrBlackListFilter_SOURCES = gfrBlackListFilter.c
-gfrBlackListFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrBlackListFilter_LDADD = libfusionseq.la  -lbios
 
 gfrProximityFilter_SOURCES = gfrProximityFilter.c
-gfrProximityFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrProximityFilter_LDADD = libfusionseq.la  -lbios
 
 gfrAddInfo_SOURCES = gfrAddInfo.c
-gfrAddInfo_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrAddInfo_LDADD = libfusionseq.la  -lbios
 
 gfrConfidenceValues_SOURCES = gfrConfidenceValues.c
-gfrConfidenceValues_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lmrf
+gfrConfidenceValues_LDADD = libfusionseq.la  -lbios -lmrf
 
 gfrRepeatMaskerFilter_SOURCES = gfrRepeatMaskerFilter.c
-gfrRepeatMaskerFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lm
+gfrRepeatMaskerFilter_LDADD = libfusionseq.la  -lbios -lm
 
 gfrCountPairTypes_SOURCES = gfrCountPairTypes.c
-gfrCountPairTypes_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lm
+gfrCountPairTypes_LDADD = libfusionseq.la  -lbios -lm
 
 gfrSpliceJunctionFilter_SOURCES = gfrSpliceJunctionFilter.c
-gfrSpliceJunctionFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrSpliceJunctionFilter_LDADD = libfusionseq.la  -lbios
 
 gfrClassify_SOURCES = gfrClassify.c
-gfrClassify_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lm
+gfrClassify_LDADD = libfusionseq.la  -lbios -lm
 
 gfrWhiteListFilter_SOURCES = gfrWhiteListFilter.c
-gfrWhiteListFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+gfrWhiteListFilter_LDADD = libfusionseq.la -lbios
 
 # -----------------------------------------------------------------------------
 # CORE: Identifying sequences of the junction
 # -----------------------------------------------------------------------------
 
 gfr2bpJunctions_SOURCES = gfr2bpJunctions.c
-gfr2bpJunctions_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios -lm
+gfr2bpJunctions_LDADD = libfusionseq.la -lbios -lm
 
 bowtie2bp_SOURCES = bowtie2bp.c
-bowtie2bp_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+bowtie2bp_LDADD = libfusionseq.la -lbios
 
 validateBpJunctions_SOURCES = validateBpJunctions.c
-validateBpJunctions_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+validateBpJunctions_LDADD = libfusionseq.la -lbios
 
 bpFilter_SOURCES = bpFilter.cpp
 bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
-bpFilter_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lstdc++ -lbios @ROOTLDFLAGS@
+bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L$ROOTLIBDIR $ROOTGLIBS $ROOTLIBS -ldl
 
 bp2alignment_SOURCES = bp2alignment.c
-bp2alignment_LDADD = libfusionseq.la @OTHERLDFLAGS@ -lbios
+bp2alignment_LDADD = libfusionseq.la -lbios
 
