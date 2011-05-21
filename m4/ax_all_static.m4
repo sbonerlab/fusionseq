@@ -7,7 +7,7 @@ AC_DEFUN([AX_ALL_STATIC], [
 
 	if test "$CC_ALL_STATIC" = yes; then
 		OTHERLDFLAGS="-all-static"
-		ROOTLDFLAGS="-L$ROOTLIBDIR -lcurses -lRoot -lpcre"
+		ROOTLDFLAGS="-L$ROOTLIBDIR -lRoot -lpcre -lncurses -lz -ldl"
 	else
 		OTHERLDFLAGS=""
 		ROOTLDFLAGS="-L$ROOTLIBDIR $ROOTGLIBS $ROOTLIBS -ldl"

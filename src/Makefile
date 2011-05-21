@@ -334,7 +334,7 @@ ROOTCONF = /usr/local/bin/root-config
 ROOTEXEC = /usr/local/bin/root
 ROOTGLIBS = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTINCDIR = /usr/local/include/root
-ROOTLDFLAGS = -L/usr/local/lib/root -lcurses -lRoot -lpcre
+ROOTLDFLAGS = -L/usr/local/lib/root -lRoot -lpcre -lncurses -lz -ldl
 ROOTLIBDIR = /usr/local/lib/root
 ROOTLIBS = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint
 ROOTRPATH = /usr/local/lib/root
@@ -466,7 +466,7 @@ validateBpJunctions_SOURCES = validateBpJunctions.c
 validateBpJunctions_LDADD = libfusionseq.la -all-static -lbios
 bpFilter_SOURCES = bpFilter.cpp
 bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
-bpFilter_LDADD = libfusionseq.la -all-static -lstdc++ -lbios -L/usr/local/lib/root -lcurses -lRoot -lpcre
+bpFilter_LDADD = libfusionseq.la -all-static -lstdc++ -lbios -L/usr/local/lib/root -lRoot -lpcre -lncurses -lz -ldl
 bp2alignment_SOURCES = bp2alignment.c
 bp2alignment_LDADD = libfusionseq.la -all-static -lbios
 all: all-am
