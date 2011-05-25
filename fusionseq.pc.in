@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @PACKAGE_NAME@
+Description: A modular framework for finding gene fusions by analyzing paired-end RNA-sequencing data
+Version: @PACKAGE_VERSION@
+URL: @PACKAGE_URL@
+Requires.private: gsl gd root bios mrf
+Cflags: -I${includedir}
+Libs: -L${libdir} -lfusionseq

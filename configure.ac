@@ -13,8 +13,9 @@ AC_CONFIG_HEADERS([config.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 LT_INIT
-
 AM_SILENT_RULES([yes])
+
+AC_SUBST([FUSIONSEQ_SO_VERSION], [0:7:0])
 
 # Checks for programs.
 AC_PROG_CC
@@ -47,5 +48,6 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/optional/Makefile
 		 src/cgi/Makefile
-		 src/test/Makefile])
+		 src/test/Makefile
+		 fusionseq.pc:fusionseq.pc.in])
 AC_OUTPUT

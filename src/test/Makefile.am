@@ -23,7 +23,7 @@ quantifierAddInfo_LDADD = ../libfusionseq.la -lbios
 
 plotIntraDistribution_SOURCES = plotIntraDistribution.cpp
 plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
-plotIntraDistribution_LDADD = ../libfusionseq.la -lstdc++ -lbios -L$ROOTLIBDIR $ROOTGLIBS $ROOTLIBS -ldl
+plotIntraDistribution_LDADD = ../libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
 
 bp2fasta_SOURCES = bp2fasta.c
 bp2fasta_LDADD = ../libfusionseq.la -lbios -lm

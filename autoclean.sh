@@ -9,6 +9,7 @@ rm -rf aclocal.m4 \
        config.h.in~ \
        config.log \
        config.status \
+       fusionseq.pc \
        config.sub \
        configure \
        depcomp \

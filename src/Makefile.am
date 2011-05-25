@@ -11,6 +11,7 @@ libfusionseq_la_SOURCES = bp.c \
 			  util.c
 
 libfusionseq_la_LIBADD = -lm -lbios 
+libfusionseq_la_LDFLAGS = -version-info $(FUSIONSEQ_SO_VERSION)
 
 include_HEADERS = bp.h \
 		  gfr.h \
@@ -120,7 +121,7 @@ validateBpJunctions_LDADD = libfusionseq.la -lbios
 
 bpFilter_SOURCES = bpFilter.cpp
 bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
-bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L$ROOTLIBDIR $ROOTGLIBS $ROOTLIBS -ldl
+bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
 
 bp2alignment_SOURCES = bp2alignment.c
 bp2alignment_LDADD = libfusionseq.la -lbios
