@@ -50,3 +50,8 @@ cd cgi && rm -rf \
        Makefile
 cd ..
 cd ..
+
+echo autoclean: cleaning doc
+cd doc && rm -rf \
+       Doxyfile
+cd ..

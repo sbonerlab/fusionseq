@@ -65,14 +65,14 @@ int main(int argc, char *argv[])
 			 arrayMax(currBP->breakPointReads) >= minNumReadsForKS) {
 			arrayClear(randomNumbers);
 			for (int j = 0; j < arrayMax(offsets); j++)
-				array (randomNumbers, arrayMax(randomNumbers), int) = std::rand() % numPossibleOffsets;
+				array(randomNumbers, arrayMax(randomNumbers), int) = std::rand() % numPossibleOffsets;
 			
 			arraySort(randomNumbers, (ARRAYORDERF) arrayIntcmp);
 			observedOffsets = (double *) hlr_malloc(arrayMax(offsets) * sizeof(double)); 
 			randomOffsets = (double *) hlr_malloc(arrayMax(offsets) * sizeof(double)); 
 			for (int j = 0; j < arrayMax(offsets); j++) {
-				observedOffsets[j] = arru(offsets,j,int);
-				randomOffsets[j] = arru(randomNumbers,j,int);
+				observedOffsets[j] = arru(offsets, j, int);
+				randomOffsets[j] = arru(randomNumbers, j, int);
 			}
 			if (pValueCutoffForKS < TMath::KolmogorovTest(arrayMax(offsets), 
 								      observedOffsets, 

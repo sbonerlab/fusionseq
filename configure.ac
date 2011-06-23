@@ -22,6 +22,11 @@ AC_PROG_CC
 AC_PROG_CXX
 ROOT_PATH([], [], [AC_MSG_ERROR([Cannot find [ROOT]])])
 AC_PROG_LIBTOOL
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test -z "$DOXYGEN"; then
+	AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+fi
+AM_CONDITIONAL([USE_DOXYGEN], [test -n "$DOXYGEN"])
 
 # Checks for libraries.
 AC_CHECK_LIB([m], [log], [], [AC_MSG_ERROR([Cannot find standard math library])])
@@ -44,6 +49,8 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd pathconf rint setenv strchr strdup strstr])
 
+# Output
+AM_COND_IF([USE_DOXYGEN], [AC_CONFIG_FILES([doc/Doxyfile])])
 AC_CONFIG_FILES([Makefile 
 		 src/Makefile
 		 src/optional/Makefile

@@ -16,12 +16,6 @@ cgi:
 test:
 	cd src/test && $(MAKE) $(AM_MAKEFLAGS)
 
-
-clean-local:
-	cd src/optional && $(MAKE) clean
-	cd src/test && $(MAKE) clean
-	cd src/cgi && $(MAKE) clean
-
 install-exec-local:
 	if test -e src/optional/bp2wig; then cd src/optional && $(MAKE) install; fi
 	if test -e src/test/bp2fasta; then cd src/test && $(MAKE) install; fi
@@ -32,5 +26,26 @@ install-data-hook:
 deploy:
 	scripts/install_deploy.pl
 
+if USE_DOXYGEN
+
+doxygen:
+	cd doc && doxygen Doxyfile
+
+clean-local:
+	cd src/optional && $(MAKE) clean
+	cd src/test && $(MAKE) clean
+	cd src/cgi && $(MAKE) clean
+	rm -rf $(top_srcdir)/doc/html
+
+.PHONY: doxygen clean-local install-exec-local install-data-hook deploy
+
+else
+
+clean-local:
+	cd src/optional && $(MAKE) clean
+	cd src/test && $(MAKE) clean
+	cd src/cgi && $(MAKE) clean
 
 .PHONY: clean-local install-exec-local install-data-hook deploy
+
+endif
