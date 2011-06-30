@@ -1,7 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.67])
 AC_INIT([fusionseq], [0.7.0], [david.chen@yale.edu])
 AC_CONFIG_SRCDIR([src/geneFusions.c])
 AC_CONFIG_SRCDIR([src/cgi/geneFusions_cgi.c])
@@ -13,7 +12,7 @@ AC_CONFIG_HEADERS([config.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 LT_INIT
-AM_SILENT_RULES([yes])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_SUBST([FUSIONSEQ_SO_VERSION], [0:7:0])
 
