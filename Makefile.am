@@ -26,6 +26,10 @@ install-data-hook:
 deploy:
 	scripts/install_deploy.pl
 
+debug:
+	$(MAKE) all "CFLAGS=-g -DDEBUG " $(AM_MAKEFLAGS)
+	$(MAKE) optional "CFLAGS=-g -DDEBUG " $(AM_MAKEFLAGS)
+
 if USE_DOXYGEN
 
 doxygen:
