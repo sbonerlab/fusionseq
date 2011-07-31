@@ -13,9 +13,6 @@
 #include "gfr.h"
 #include "util.h"
 
-#define MAX_FRACTION_HOMOLOGOUS 0.05
-#define MAX_OVERLAP_ALLOWED 0.75
-
 int main (int argc, char *argv[])
 {
   GfrEntry *currGE;
@@ -85,7 +82,7 @@ int main (int argc, char *argv[])
     //blat of reads against the ribosomal genes
     // 2*stepSize + tileSize - 1 = min_num_nt_to_trigger_alignment
     // tileSize = 15
-    // int stepSize = (int)((readSize1*MAX_OVERLAP_ALLOWED + 1 + 11) * 0.5);
+    // int stepSize = (int)((readSize1 * confp_get(conf, "MAX_OVERLAP_ALLOWED") + 1 + 11) * 0.5);
     stringPrintf(cmd, "blat -t=dna -q=dna -out=psl -fine -repMatch=1000000 -tileSize=15 %s/%s %s_reads.fa stdout", 
                  confp_get(conf, "RIBOSOMAL_DIR"), 
 		 confp_get(conf, "RIBOSOMAL_FILENAME"), 
@@ -94,12 +91,12 @@ int main (int argc, char *argv[])
     blatParser_initFromPipe( string(cmd) );
     while( blQ = blatParser_nextQuery() ) {
       int nucleotideOverlap = getNucleotideOverlap ( blQ );
-      if (nucleotideOverlap > (((double)readSize1)*MAX_OVERLAP_ALLOWED)) {
+      if (nucleotideOverlap > (((double)readSize1) * strtod(confp_get(conf, "MAX_OVERLAP_ALLOWED"), NULL))) {
 	ribosomalCount++;
       } 
     }
     blatParser_deInit();
-    if (( (double)ribosomalCount / ( (double)currGE->numInter * 2.0 ) ) <= MAX_FRACTION_HOMOLOGOUS) {       
+    if (( (double)ribosomalCount / ( (double)currGE->numInter * 2.0 ) ) <= strtod(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"), NULL)) {       
       // writing the gfrEntry
       puts (gfr_writeGfrEntry (currGE));
       count++;

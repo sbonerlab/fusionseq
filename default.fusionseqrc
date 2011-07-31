@@ -28,6 +28,17 @@ KNOWN_GENE_TREE_FAM_FILENAME="knownToTreefam.txt"
 RIBOSOMAL_DIR="/path/to/ribosomal/Dir"
 RIBOSOMAL_FILENAME="ribosomal.2bit"
 
+# Used for gfr2bpJunctions
+MAX_NUMBER_OF_JUNCTION_PER_FILE=2000000
+
+# Used for gfrRibosomalFilter
+MAX_FRACTION_HOMOLOGOUS=0.05
+MAX_OVERLAP_ALLOWED=0.75
+
+# Used for gfrSpliceJunctionFilter
+MAX_FRACTION_SPLICES=0.05
+
+
 # ----------------------- This section is optional: visualization tools -------------------------
 # URL of the cgi directory on the web server
 WEB_URL_CGI="http://cgiURL" 

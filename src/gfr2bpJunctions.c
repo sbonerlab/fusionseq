@@ -13,7 +13,6 @@
 
 
 
-#define MAX_NUMBER_OF_JUNCTIONS_PER_FILE 2000000
 
 typedef struct {
   int start;
@@ -317,7 +316,7 @@ static void writeTiles (Array tiles1,
     for (j = 0; j < arrayMax (tiles2); j++) {
       secondSeq = arrp (tiles2,j,Seq);
       numJunctions++; 
-       if (numJunctions == MAX_NUMBER_OF_JUNCTIONS_PER_FILE) {
+       if (numJunctions == atoi(confp_get(Conf, "MAX_NUMBER_OF_JUNCTIONS_PER_FILE"))) {
         printCommands (id,orientation,fileCount,fpJobList1,fpJobList2,gfrPrefix,fileCount == 1 ? 1 : 0,0);
         fclose (fp);
         numJunctions = 0;

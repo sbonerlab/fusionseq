@@ -26,7 +26,7 @@ int inRegion (int istart, int iend, int rstart, int rend)
   return 0;
 }
 
-unsigned int randomN (int n)
+unsigned long int randomN (int n)
 {
   return random() / ((2 << 30) - 1) * n;
 }

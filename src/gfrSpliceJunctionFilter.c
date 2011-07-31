@@ -15,8 +15,6 @@
 #include "gfr.h"
 #include "util.h"
 
-#define MAX_FRACTION_SPLICES 0.05
-
 int sortGfrById( GfrEntry* a, GfrEntry* b) {
   return strcmp( a->id, b->id);
 }
@@ -36,6 +34,10 @@ int main (int argc, char *argv[])
   int countRemoved;
   int readSize1,readSize2;
   BlatQuery *blQ = NULL;
+  config *conf;
+
+  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL)
+	  return EXIT_FAILURE;
   
   if( argc != 2 ) {
     usage("%s <splice_junction_library>\nNB: the splice junction library should be in 2bit format.\nEx: %s ucsc_nh_sj75.2bit", argv[0], argv[0]);
@@ -136,7 +138,7 @@ int main (int argc, char *argv[])
       }      
       textDestroy( readPos);
     }    
-    if( numHits > arrayMax( currGE->interReads ) * MAX_FRACTION_SPLICES )  {
+    if (numHits > arrayMax( currGE->interReads ) * strtod(confp_get(conf, "MAX_FRACTION_SPLICES"), NULL))  {
       textAdd( toRemove, currGE->id);
     }
     
@@ -170,6 +172,7 @@ int main (int argc, char *argv[])
   warn ("%s_spliceJunctionLibrary: %s",argv[0],spliceJunctionLibrary);
   warn ("%s_numRemoved: %d",argv[0],countRemoved);  
   warn ("%s_numGfrEntries: %d",argv[0],count);
+  confp_close(conf);
   return 0;
 }
 
