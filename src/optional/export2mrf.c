@@ -98,8 +98,9 @@ int main (int argc, char *argv[])
 
     readLength = strlen( currEnd1->sequence );
     if( strStartsWith( currEnd1->chromosome, "chr") ) { // genomic
-      pos = strchr ( currEnd1->chromosome,'.');	  
-      *pos = '\0';
+      pos = strchr ( currEnd1->chromosome,'.');
+      if( pos )
+	*pos = '\0';
       chrEnd1 = atoi( currEnd1->chromosome+3 ); 
       startEnd1 = currEnd1->position;
       if( currEnd1->position<0 ) 
@@ -137,7 +138,8 @@ int main (int argc, char *argv[])
     readLength = strlen( currEnd2->sequence );
     if( strStartsWith( currEnd2->chromosome, "chr") ) { // genomic - inter
       pos = strchr ( currEnd2->chromosome,'.');	  
-      *pos = '\0';
+      if( pos )
+	*pos = '\0';
       chrEnd2 = atoi( currEnd2->chromosome+3 );
       startEnd2 = currEnd2->position;
       stringPrintf( end2, "%s:%c:%d:%d:1:%d", currEnd2->chromosome, convertStrand ( currEnd2->strand), currEnd2->position, currEnd2->position + readLength - 1, readLength );      
