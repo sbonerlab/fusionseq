@@ -28,9 +28,18 @@ int main (int argc, char *argv[])
 
   config *conf;
 
-  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL)
+  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+    die("%s:\tCannot find .fusionseqrc", argv[0]);
     return EXIT_FAILURE;
-  
+  }
+  if( confp_get( conf,"MAX_OVERLAP_ALLOWED")==NULL ) {
+    die("%s:\tCannot find MAX_OVERLAP_ALLOWED in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+  if( confp_get( conf,"MAX_FRACTION_HOMOLOGOUS")==NULL ) {
+    die("%s:\tCannot find MAX_FRACTION_HOMOLOGOUS in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
   gfr_init ("-");
   gfrEntries = arrayCreate( 100, GfrEntry );
   gfrEntries =  gfr_parse ();
