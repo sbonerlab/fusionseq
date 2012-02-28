@@ -14,7 +14,7 @@ cgi:
 	cd src/cgi && $(MAKE) $(AM_MAKEFLAGS) cgi
 
 test:
-	cd src/test && $(MAKE) $(AM_MAKEFLAGS)
+	cd src/test && $(MAKE) "CFLAGS=-g -DDEBUG " $(AM_MAKEFLAGS)
 
 install-exec-local:
 	if test -e src/optional/bp2wig; then cd src/optional && $(MAKE) install; fi
