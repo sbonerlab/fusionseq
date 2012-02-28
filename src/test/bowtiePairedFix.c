@@ -1,10 +1,10 @@
-#include "log.h"
-#include "format.h"
-#include "mrf.h"
-#include "linestream.h"
-#include "stringUtil.h"
-#include "common.h"
-#include "seq.h"
+#include <bios/log.h>
+#include <bios/format.h>
+#include <mrf/mrf.h>
+#include <bios/linestream.h>
+#include <bios/stringUtil.h>
+#include <bios/common.h>
+#include <bios/seq.h>
 
 int main (int argc, char *argv[])
 {
