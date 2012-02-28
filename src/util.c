@@ -132,14 +132,16 @@ void transcript2geneSymbolAndGeneDescription (Array kgXrefs, char *transcriptNam
   for (i = 0; i < arrayMax (tokens); i++) {
     testKX.transcriptName = hlr_strdup (textItem (tokens,i));
     if (!arrayFind (kgXrefs,&testKX,&index,(ARRAYORDERF)sortKgXrefsByTranscriptName)) {
-      die ("Expected to find KgXref: %s",testKX.transcriptName);
-    }
-    currKX = arrp (kgXrefs,index,KgXref);
-    if (currKX->refseqDescription[0] != '\0') {
-      textAdd (descriptions,currKX->refseqDescription);
-    }
-    if (currKX->geneSymbol[0] != '\0') {
-      textAdd (geneSymbols,currKX->geneSymbol);
+      warn ("Expected to find KgXref: %s",testKX.transcriptName);
+      textAdd ( geneSymbols, testKX.transcriptName );
+    } else {
+      currKX = arrp (kgXrefs,index,KgXref);
+      if (currKX->refseqDescription[0] != '\0') {
+	textAdd (descriptions,currKX->refseqDescription);
+      }
+      if (currKX->geneSymbol[0] != '\0') {
+	textAdd (geneSymbols,currKX->geneSymbol);
+      } 
     }
     hlr_free (testKX.transcriptName);
   }
