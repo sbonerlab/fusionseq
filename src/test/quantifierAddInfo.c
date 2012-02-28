@@ -34,7 +34,7 @@ int main (int argc, char *argv[])
 	stringDestroy (buffer);
 
 	//  gfr_init ("-");
-	//  ls = ls_createFromFile("-");
+	 ls = ls_createFromFile("-");
   
 	while (line = ls_nextLine(ls)) {
 		char *lineP = hlr_strdup(line);
@@ -60,7 +60,8 @@ int main (int argc, char *argv[])
 		} else {
 			printf("%s\t%s\t1\t%s", 
 				nameTranscript, 
-				geneSymbolTranscript, 
+			
+	geneSymbolTranscript, 
 				descriptionTranscript);
 		}
 		printf("%s\n", lineP+strlen(nameTranscript));
