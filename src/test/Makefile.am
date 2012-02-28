@@ -1,12 +1,13 @@
 bin_PROGRAMS =  gfSimulation \
+		bowtiePairedFix \
 		mrfPseudogeneOverlap \
-		 quantifierAddInfo \
-		 plotIntraDistribution \
-		 bp2fasta \
-		 bpClustering \
-		 bpValidate
+		quantifierAddInfo \
+		plotIntraDistribution \
+		bp2fasta \
+		bpClustering \
+		bpValidate
 
-AM_CPPFLAGS = -I ../
+AM_CPPFLAGS = -I ../ 
 
 # -----------------------------------------------------------------------------
 # TEST
@@ -14,6 +15,9 @@ AM_CPPFLAGS = -I ../
 
 gfSimulation_SOURCES = gfSimulation.c
 gfSimulation_LDADD = ../libfusionseq.la -lbios -lm
+
+bowtiePairedFix_SOURCES = bowtiePairedFix.c
+bowtiePairedFix_LDADD = ../libfusionseq.la -lbios -lmrf -lm
 
 mrfPseudogeneOverlap_SOURCES = mrfPseudogeneOverlap.c
 mrfPseudogeneOverlap_LDADD = ../libfusionseq.la -lbios -lmrf -lm
