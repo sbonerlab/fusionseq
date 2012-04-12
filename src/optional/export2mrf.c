@@ -97,7 +97,8 @@ int main (int argc, char *argv[])
    
 
     readLength = strlen( currEnd1->sequence );
-    if( strStartsWith( currEnd1->chromosome, "chr") ) { // genomic
+    
+    if( strStartsWith( currEnd1->chromosome, "chr" ) && strstr( currEnd1->chromosome, "|")==NULL ) { // genomic
       pos = strchr ( currEnd1->chromosome,'.');
       if( pos )
 	*pos = '\0';
@@ -106,8 +107,12 @@ int main (int argc, char *argv[])
       if( currEnd1->position<0 ) 
 	continue;
       stringPrintf( end1, "%s:%c:%d:%d:1:%d", currEnd1->chromosome, convertStrand (currEnd1->strand), currEnd1->position, currEnd1->position + readLength - 1, readLength );
-    } else if( strstr( currEnd1->chromosome, "junction" ) ) { // junction
-      Texta location = textFieldtokP ( currEnd1->contig, "|" );
+    } else if( strstr( currEnd1->chromosome, "junction" ) || strstr( currEnd1->chromosome, "|")!=NULL ) { // junction 
+      Texta location = textFieldtokP ( currEnd1->contig, "|" ); // old export files have the splice junction information in the contig field
+      if( arrayMax( location ) != 4 )
+	location = textFieldtokP ( currEnd1->chromosome, "|" ); // newer export files have the splice junction information int the chromosome field
+      if( arrayMax( location ) != 4 )
+	die( "Error: not a valid splice junction element (read1):\t(chromosome):%s\t(contig):%s", currEnd1->chromosome, currEnd1->contig );
       int tilestart1 = atoi( textItem( location, 1) );
       int tilestart2 = atoi( textItem( location, 2) );
       int tileSize = atoi( textItem( location, 3 ) );
@@ -136,15 +141,19 @@ int main (int argc, char *argv[])
       continue;
     }
     readLength = strlen( currEnd2->sequence );
-    if( strStartsWith( currEnd2->chromosome, "chr") ) { // genomic - inter
+    if( strStartsWith( currEnd2->chromosome, "chr") && strstr( currEnd2->chromosome, "|")==NULL ) { // genomic - inter
       pos = strchr ( currEnd2->chromosome,'.');	  
       if( pos )
 	*pos = '\0';
       chrEnd2 = atoi( currEnd2->chromosome+3 );
       startEnd2 = currEnd2->position;
       stringPrintf( end2, "%s:%c:%d:%d:1:%d", currEnd2->chromosome, convertStrand ( currEnd2->strand), currEnd2->position, currEnd2->position + readLength - 1, readLength );      
-    } else if( strstr( currEnd2->chromosome, "junction" ) ) { // junction
-      Texta location = textFieldtokP ( currEnd2->contig, "|" );
+    } else if( strstr( currEnd2->chromosome, "junction" ) || strstr( currEnd2->chromosome, "|")!=NULL ) { // junction
+      Texta location = textFieldtokP ( currEnd2->contig, "|" ); // old export files have the splice junction information in the contig field
+      if( arrayMax( location ) != 4 )
+	location = textFieldtokP ( currEnd2->chromosome, "|" ); // newer export files have the splice junction information int the chromosome field
+      if( arrayMax( location ) != 4 )
+	die( "Error: not a valid splice junction element (read2):\t(chromosome):%s\t(contig):%s", currEnd2->chromosome, currEnd2->contig);
       //strReplace( &partnerChromosome,  textItem( location, 0));
       int tilestart1 = atoi( textItem( location, 1) );
       int tilestart2 = atoi( textItem( location, 2) );
