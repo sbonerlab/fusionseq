@@ -465,12 +465,12 @@ static GfrEntry* gfr_processNextEntry (int freeMemory)
             items = textFieldtok (textItem (tokens,i),",");
 	    if( arrayMax( items ) > 3  ) {
 		  currGPC->pairType = atoi (textItem (items,0));
-		  currGPC->count = atoi (textItem (items,1));
+		  currGPC->count = atof (textItem (items,1));
 		  currGPC->number1 = atoi (textItem (items,2));
 		  currGPC->number2 = atoi (textItem (items,3));
 	    } else { 
 	      currGPC->pairType = GFR_PAIR_TYPE_EXONIC_EXONIC;
-	      currGPC->count = atoi (textItem (items,2));
+	      currGPC->count = atof (textItem (items,2));
 	      currGPC->number1 = atoi (textItem (items,0));
 	      currGPC->number2 = atoi (textItem (items,1));
 	    }
@@ -699,8 +699,8 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
       gfr_addTab (buffer,&first);
       for (j = 0; j < arrayMax (currEntry->pairCounts); j++) {
         currGPC = arrp (currEntry->pairCounts,j,GfrPairCount);
-        stringAppendf (buffer,"%d,%d,%d,%d%s",currGPC->pairType,currGPC->count,currGPC->number1,currGPC->number2,
-                       j < arrayMax (currEntry->pairCounts) - 1 ? "|" : "");
+        stringAppendf (buffer,"%d,%1.2f,%d,%d%s",currGPC->pairType,currGPC->count,currGPC->number1,currGPC->number2,
+                       (j < arrayMax (currEntry->pairCounts) - 1 ? "|" : "") );
       }
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_INTER_READS) && columnType == GFR_COLUMN_TYPE_INTER_READS) {
