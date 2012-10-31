@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include <bios/confp.h>
 #include <bios/log.h>
 #include <bios/format.h>
@@ -7,6 +6,22 @@
 
 #include "util.h"
 #include "gfr.h"
+
+/**
+  \file gfrClassify.c 
+  \brief Classification of fusion candidates.
+  \details Classification of fusion candidates based on the location of the two genes.
+  - inter: inter-chromosomal
+  - intra: intra-chromosomal
+  - read-through: intra-chromosomal between nearby genes on the same strand
+  - cis: intra-chromosomal between genes on different strands
+
+  \author Andrea Sboner (andrea.sboner.w [at] gmail.com).
+  \version 0.8
+  \date 2012.08.22						
+  \pre It requires a gene annotation file in interval format TRANSCRIPT_COMPOSITE_MODEL_FILENAME.
+ */
+ 
 
 int main (int argc, char *argv[])
 {
