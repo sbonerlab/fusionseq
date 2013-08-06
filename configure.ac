@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([fusionseq], [0.7.0], [david.chen@yale.edu])
+AC_INIT([fusionseq], [0.7.2], [david.chen@yale.edu])
 AC_CONFIG_SRCDIR([src/geneFusions.c])
 AC_CONFIG_SRCDIR([src/cgi/geneFusions_cgi.c])
 AC_CONFIG_SRCDIR([src/test/bp2fasta.c])
@@ -14,7 +14,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror])
 LT_INIT
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_SUBST([FUSIONSEQ_SO_VERSION], [0:7:0])
+AC_SUBST([FUSIONSEQ_SO_VERSION], [2:7:0])
 
 # Checks for programs.
 AC_PROG_CC
@@ -49,7 +49,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([getcwd pathconf rint setenv strchr strdup strstr])
 
 # Output
-AM_COND_IF([USE_DOXYGEN], [AC_CONFIG_FILES([doc/Doxyfile])])
+#AM_COND_IF([USE_DOXYGEN], [AC_CONFIG_FILES([doc/Doxyfile])])
 AC_CONFIG_FILES([Makefile 
 		 src/Makefile
 		 src/optional/Makefile
