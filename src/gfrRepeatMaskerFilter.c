@@ -17,6 +17,22 @@
    @pre [in] minNumberInterReads An integer representing the minimum number of reads to keep the fusion candidate.
  */
 
+
+static float getNumInter( GfrInterRead* currInter, int readLength ) { // computes the correct number of the inters by considering split reads on splice junctions.
+  float numInter=0.0;
+  if( (currInter->readEnd1 - currInter->readStart1 + 1) != readLength &
+      (currInter->readEnd2 - currInter->readStart2 + 1) != readLength  ) {
+    numInter += 0.25;
+  } else if ( (currInter->readEnd1 - currInter->readStart1 + 1) != readLength  |
+	      (currInter->readEnd2 - currInter->readStart2 + 1) != readLength ) {
+    numInter += 0.5;
+  } else {
+    numInter += 1.0;
+  }
+  return( numInter );
+}
+
+
 int main (int argc, char *argv[]) {
 	GfrEntry *currGE;
 	int count,countRemoved;
@@ -25,7 +41,7 @@ int main (int argc, char *argv[]) {
 	GfrInterRead *currGIR;
 	int totalOverlaps;
 	int minNumInterReads;
-
+	float numberOfInters;
 	if (argc != 3) {
 		usage ("%s <repeatMasker.interval> <minNumInterReads>",argv[0]);
 	}
@@ -36,27 +52,32 @@ int main (int argc, char *argv[]) {
 	gfr_init ("-");
 	puts (gfr_writeHeader ());
 	while (currGE = gfr_nextEntry ()){
-		for (i = 0; i < arrayMax (currGE->interReads); i++) {
-			currGIR = arrp (currGE->interReads,i,GfrInterRead);
-			if (currGIR->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC) {
-				continue;
-			}
-			totalOverlaps = 0;
-			intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript1,currGIR->readStart1,currGIR->readEnd1);
-			totalOverlaps += arrayMax (intervals);
-			intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript2,currGIR->readStart2,currGIR->readEnd2);
-			totalOverlaps += arrayMax (intervals);
-			if (totalOverlaps > 0) {
-				currGE->numInter--;
-				currGIR->flag = 1;
-			}
-		}
-		if (currGE->numInter < minNumInterReads) {
-			countRemoved++;
-			continue;
-		}
-		puts (gfr_writeGfrEntry (currGE));
-		count++;
+	  int readLength = strlen( arru( currGE->readsTranscript1, 0, Texta ) );
+	  numberOfInters = (float) currGE->numInter;
+	  for (i = 0; i < arrayMax (currGE->interReads); i++) {
+	    currGIR = arrp (currGE->interReads,i,GfrInterRead);
+	    if (currGIR->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC) {
+	      continue;
+	    }
+	    totalOverlaps = 0;
+	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript1,currGIR->readStart1,currGIR->readEnd1);
+	    totalOverlaps += arrayMax (intervals);
+	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript2,currGIR->readStart2,currGIR->readEnd2);
+	    totalOverlaps += arrayMax (intervals);
+	    if (totalOverlaps > 0) {
+	      //currGE->numInter-= getNumInter( currGIR, readLength ); // currGE->numInter is an integer, numberOfInters is float!
+	      numberOfInters-= getNumInter( currGIR, readLength );
+	      currGIR->flag = 1;
+	    }
+	  }
+	  
+	  // if (currGE->numInter < minNumInterReads) // numberOfInters correctly determine the splice number numInter, w
+	  if( numberOfInters < minNumInterReads ) {
+	    countRemoved++;
+	    continue;
+	  }
+	  puts (gfr_writeGfrEntry (currGE));
+	  count++;
 	}
 	gfr_deInit ();
 	warn ("%s_numRemoved: %d",argv[0],countRemoved);
