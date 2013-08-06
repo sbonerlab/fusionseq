@@ -11,6 +11,22 @@
 
 #include "gfr.h"
 
+/**
+  @file gfr2bpJunction.c 
+  @brief Generation of the virtual tiles and junctions.
+  @details Generation of the virtual tiles for each fusion candidate in the GFR file and creation of all the possible junctions. 
+  @author Andrea Sboner (andrea.sboner.w [at] gmail.com).
+  @version 0.8						
+  @pre A gene annotation file in interval format TRANSCRIPT_COMPOSITE_MODEL_FILENAME.
+  @param [in] file.gfr the GFR file that will be examined
+  @param [in] tileSize the size of the virtual tiles that will generated, typically readSize - 6
+  @param [in] sizeFlankingRegion the size of the flanking regions that will be considered in bp, typically 50
+  @param [in] minDASPER minimum DASPER score to proceed with the analysis [optional]
+  @attention  @code $ gfr2bpJunction file.gfr 44 50 1.1 @endcode
+
+  @remarks It will generate several files named after the fusion IDs, and two joblist[12].txt files. These will be used to run the jobs in parallel. The stderr messages are mostly for logging purposes.
+  @copyright GNU license: free for academic use
+ */
 
 
 
@@ -244,7 +260,7 @@ static void printCommands (char *id,
     }
     first = 0;
   }
-  fprintf (fpJobList1,"cd %s; bowtie-build -q -f %s_%s_%d.fa %s/%s_%s_%d; zcat %s_allReads.txt.gz | bowtie --quiet -p 4 -r %s/%s_%s_%d - %s_%s_%d.bowtie; rm -rf %s_%s_%d.fa %s/%s_%s_%d.*.ebwt\n",
+  fprintf (fpJobList1,"cd %s; (bowtie-build -q -f %s_%s_%d.fa %s/%s_%s_%d; zcat %s_allReads.txt.gz | bowtie --quiet -p 4 -r %s/%s_%s_%d - %s_%s_%d.bowtie) 2> %s_%s_%d.log; rm -rf %s_%s_%d.fa %s/%s_%s_%d.*.ebwt\n",
            currentDirectory,
 	   id,
 	   orientation,
@@ -255,6 +271,9 @@ static void printCommands (char *id,
 	   fileCount,
 	   gfrPrefix,
 	   confp_get(Conf, "BOWTIE_INDEXES"),
+	   id,
+	   orientation,
+	   fileCount,
 	   id,
 	   orientation,
 	   fileCount,
@@ -353,7 +372,7 @@ int main (int argc, char *argv[])
   Stringa buffer;
   double minDASPER;
 
-  if (argc <= 4) {
+  if (argc < 4) {
     usage ("%s <file.gfr> <tileSize> <sizeFlankingRegion> [minDASPER]",argv[0]);
   }
 
