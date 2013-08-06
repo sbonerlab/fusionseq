@@ -1,5 +1,4 @@
-bin_PROGRAMS = gfr2images \
-		 gfr2bed \
+bin_PROGRAMS =	 gfr2bed \
 		 gfr2fasta \
 		 gfr2gff \
 		 bp2wig \
@@ -12,8 +11,8 @@ AM_CPPFLAGS = -I ../
 # OPTIONAL
 # -----------------------------------------------------------------------------
 
-gfr2images_SOURCES = gfr2images.c
-gfr2images_LDADD = ../libfusionseq.la -lbios -lgd -lm
+# gfr2images_SOURCES = gfr2images.c
+# gfr2images_LDADD = ../libfusionseq.la -lbios -lgd -lm
 
 gfr2bed_SOURCES = gfr2bed.c
 gfr2bed_LDADD = ../libfusionseq.la -lbios
