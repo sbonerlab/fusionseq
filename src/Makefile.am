@@ -18,7 +18,8 @@ include_HEADERS = bp.h \
 		  sqvCircos.h \
 		  sqvUtil.h \
 		  sqvWeb.h \
-		  util.h
+		  util.h \
+		  uthash.h 
 
 # -----------------------------------------------------------------------------
 # FusionSeq programs
@@ -37,6 +38,7 @@ bin_PROGRAMS = geneFusions \
 	       gfrBlackListFilter \
 	       gfr2bpJunctions \
 	       bowtie2bp \
+		sam2bp \
 	       gfrConfidenceValues \
 	       validateBpJunctions \
 	       gfrExpressionConsistencyFilter \
@@ -46,7 +48,8 @@ bin_PROGRAMS = geneFusions \
 	       gfrRibosomalFilter \
 	       gfrSpliceJunctionFilter \
 	       gfrClassify \
-	       gfrWhiteListFilter
+	       gfrWhiteListFilter \
+	       gfrRandomPairingFilter
 
 # -----------------------------------------------------------------------------
 # CORE: Finding candidate fusions
@@ -106,6 +109,9 @@ gfrClassify_LDADD = libfusionseq.la -lbios -lm
 gfrWhiteListFilter_SOURCES = gfrWhiteListFilter.c
 gfrWhiteListFilter_LDADD = libfusionseq.la -lbios
 
+gfrRandomPairingFilter_SOURCES = gfrRandomPairingFilter.c
+gfrRandomPairingFilter_LDADD = libfusionseq.la -lbios
+
 # -----------------------------------------------------------------------------
 # CORE: Identifying sequences of the junction
 # -----------------------------------------------------------------------------
@@ -115,6 +121,9 @@ gfr2bpJunctions_LDADD = libfusionseq.la -lbios -lm
 
 bowtie2bp_SOURCES = bowtie2bp.c
 bowtie2bp_LDADD = libfusionseq.la -lbios
+
+sam2bp_SOURCES = sam2bp.c
+sam2bp_LDADD = libfusionseq.la -lbios
 
 validateBpJunctions_SOURCES = validateBpJunctions.c
 validateBpJunctions_LDADD = libfusionseq.la -lbios
