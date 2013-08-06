@@ -94,21 +94,26 @@ int main (int argc, char *argv[])
   printf("%s\n", gfr_writeHeader() );
   for( i=0; i<arrayMax(gfrA); i++) {
     GfrEntry* gfrE =  arrp( gfrA, i, GfrEntry );
-    currHash = NULL;
-    currHash = findGene( gfrE->nameTranscript1 );
-    if( !currHash ) die("Error: transcript1 %s not found.", gfrE->nameTranscript1);
-    if( currHash->numFusions < 4 ) {
+    if( (gfrE->DASPER > 1 ) ) { // check only if DASPER < 1; otherwise keep it
+      countGFR++;
+      printf("%s\n" , gfr_writeGfrEntry(gfrE) );
+    } else {
       currHash = NULL;
-      currHash = findGene( gfrE->nameTranscript2 );
-      if( !currHash ) die("Error: transcript2 %s not found.", gfrE->nameTranscript2);
+      currHash = findGene( gfrE->nameTranscript1 );
+      if( !currHash ) die("Error: transcript1 %s not found.", gfrE->nameTranscript1);
       if( currHash->numFusions < 4 ) {
-	countGFR++;
-	printf("%s\n" , gfr_writeGfrEntry(gfrE) );
-      } else {
-	countRemoved++;
-      }
+	currHash = NULL;
+	currHash = findGene( gfrE->nameTranscript2 );
+	if( !currHash ) die("Error: transcript2 %s not found.", gfrE->nameTranscript2);
+	if( currHash->numFusions < 4  ) { 
+	  countGFR++;
+	  printf("%s\n" , gfr_writeGfrEntry(gfrE) );
+	} else  {
+	  countRemoved++;
+	}
+      } else countRemoved++;
     }
-  }
+  }  
   gfr_deInit();
   HASH_ITER( hh, myGeneFusionsCount, s, tmp) {
     HASH_DEL( myGeneFusionsCount, s);
