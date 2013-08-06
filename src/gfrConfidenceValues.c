@@ -45,6 +45,7 @@ int main (int argc, char *argv[])
     die( "File not found: (%s.meta)", argv[1]);
   } else {
     while( line = ls_nextLine( ls ) ) {
+      if ( *line=='\0') break;
       WordIter w = wordIterCreate( line, "\t", 1);
       if( strEqual( wordNext ( w ), "Mapped_reads") ) {
 	Npe = atof( wordNext( w ) );
