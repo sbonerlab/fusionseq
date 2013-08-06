@@ -59,6 +59,10 @@ int main (int argc, char *argv[])
     // creating a new query to the black list
     currQuery.gene1 = currGE->geneSymbolTranscript1;
     currQuery.gene2 = currGE->geneSymbolTranscript2;
+    if( strEqual( currQuery.gene1 , currQuery.gene2 ) ) {
+	countRemoved++;
+	continue;
+      }
     // searching against read_1/read_2
     int res = arrayFind( blackList, &currQuery, 
 			 &index,  (ARRAYORDERF) sortBlackListByName1);  
