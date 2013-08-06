@@ -10,61 +10,92 @@
 
 #include "gfr.h"
 
+/**
+  @file geneFusions.c 
+  @brief Identification of fusion candidates.
+  @details Identification of fusion transcript candidates from paired RNA-seq. 
+  @author Andrea Sboner (andrea.sboner.w [at] gmail.com).
+  @version 0.8						
+  @pre A gene annotation file in interval format TRANSCRIPT_COMPOSITE_MODEL_FILENAME.
+  @param [in] prefix the prefix that will be used to create fusion transcript IDs, e.g. prefix_00001, prefix_00002, etc.
+  @param [in] minNumberOfPairedEndReads minimum number of reads to call a potential candidate, typically 5
+  @attention It requires and MRF file from stdin: @code $ geneFusions file 5 < file.mrf @endcode
+
+  @remarks It outputs to stdin and stderr. The stderr messages are mostly for logging purposes.
+  @copyright GNU license: free for academic use
+ */
+
 
 #define SAMPLING_ITERATIONS 100000
 
-static config *Conf = NULL;
 
+static config *Conf = NULL; /**< Pointer to configuration file .fusionseqrc  */
+static Array countPairs = NULL; /**< Array to determine the number of reads per each transcript connection.  */
+
+/**
+  Representation of the intra-transcript paired end reads
+ */
 typedef struct {
-  Interval *transcript;
-  char* read1;
-  char* read2;
-  int readStart1;
-  int readStart2;
-  int readEnd1;
-  int readEnd2;
+  Interval *transcript; /**< Pointer to the transcript */
+  char* read1; /**< Sequence of the first end */
+  char* read2; /**< Sequence of the first end */
+  int readStart1;/**< Start position of the first end */
+  int readStart2;/**< Start position of the second end */
+  int readEnd1;/**< End position of the first end */
+  int readEnd2;/**< End position of the second end */
 } Intra;
 
 
-
+/**
+  Representation of the inter-transcript paired end reads
+ */
 typedef struct {
-  Interval *transcript1;
-  Interval *transcript2;
-  char* read1;
-  char* read2;
-  int readStart1;
-  int readStart2;
-  int readEnd1;
-  int readEnd2;
-  int pairType;
-  int number1;
-  int number2;
+  Interval *transcript1; /**< Pointer to the first transcript */
+  Interval *transcript2; /**< Pointer to the second transcript */
+  char* read1; /**< Sequence of the first end */
+  char* read2; /**< Sequence of the first end */
+  int readStart1;/**< Start position of the first end */
+  int readStart2;;/**< Start position of the second end */
+  int readEnd1;/**< End position of the first end */
+  int readEnd2;/**< End position of the second end */
+  int pairType;/**< Type of connection, i.e. exon-exon, exon-intron, exon-boundary (and viceversa) */
+  int number1;/**< location of first end in transcript virtual-exon coordinates */
+  int number2;/**< location of the second end in transcript virtual-exon coordinates */
 } Inter;
 
-
-
+    
+/**
+   Collection of all the intra-transcript reads per transcript
+*/
 typedef struct {
-  Interval *transcript;
-  Array intras;  // of type Intra*
+  Interval *transcript; /**< pointer to the transcript */
+  Array intras; /**< Array of all the intra-transcripts reads. @remark Type is Intra* */
 } SuperIntra;
 
 
-
+/**
+   Collection of all the inter-transcript reads per pair of transcripts.
+*/
 typedef struct {
-  Interval *transcript1;
-  Interval *transcript2;
-  Array inters;  // of type Inter*
+  Interval *transcript1; /**< pointer to the first transcript */
+  Interval *transcript2; /**< pointer to the second transcript */
+  Array inters;  /**< Array of all the inter-transcript reads. @remark Type is Inter* */ 
 } SuperInter;
 
 
 
+/**
+   Genomic and transcriptomic coordinates
+*/
 typedef struct {
-  char* chromosome;
-  int genomic;
-  int transcript;
+  char* chromosome; /**< chromosome */
+  int genomic; /**< genomic location */
+  int transcript; /**< transcriptomic location */
 } Coordinate; 
 
-
+/**
+   Calculating the number of intra-transcript reads, accounting for the splice reads in a proper manner.
+*/
 int getNumberOfIntras( SuperIntra* a ) {
   int i;
   double numberOfIntras=0.0;
@@ -89,7 +120,9 @@ int getNumberOfIntras( SuperIntra* a ) {
   }
   return (int) rint( numberOfIntras );
 }
-
+/**
+   Calculating the number of inter-transcript reads, accounting for the splice reads in a proper manner.
+*/
 int getNumberOfInters( SuperInter* a ) {
   int i;
   double numberOfInters=0.0;
@@ -115,6 +148,20 @@ int getNumberOfInters( SuperInter* a ) {
   return (int) rint( numberOfInters );
 }
 
+static int sortIntersByType (Inter *a, Inter *b)
+{
+	int diff;
+  
+	diff = a->pairType - b->pairType;
+	if (diff != 0) {
+	    return diff;
+	}
+	diff = a->number1 - b->number1;
+	if (diff != 0) {
+		return diff;
+	}
+	return a->number2 - b->number2;
+}
 
 static int sortIntersByTranscript (Inter *a, Inter *b)
 {
@@ -205,7 +252,9 @@ static int getJunctionNumber (Interval* transcript, int start, int end, int exon
 }
 
 
-
+/**
+   Identifying the pair type
+*/
 static void assignPairType (Inter *currInter, int exon1, int intron1, int junction1, int exon2, int intron2, int junction2)
 {
   if (exon1 > 0 && exon2 > 0) {
@@ -297,54 +346,163 @@ static Array convertIntraCoordinates (Interval *transcript)
 }
 
 
+int isValidExon( int exonNum, int isOne) {
+  GfrPairCount* currPC;
+  int i, number;
+  int valid=0;
+  
+  for( i = 0; i<arrayMax( countPairs ); i++ ) {
+    currPC = arrp( countPairs, i, GfrPairCount );
+    if( currPC->pairType != GFR_PAIR_TYPE_EXONIC_EXONIC )
+      continue;
+    if( isOne )
+      number = currPC->number1;
+    else
+      number = currPC->number2;
+    if( number != exonNum )
+      continue;
+    else {
+      if( currPC->count > 2  ) {
+	valid=1;
+	break;
+      }
+    }//*/
+  }
+  return valid;
+}
 
 static void addInterCoordinates (Interval *transcript, Array coordinates, int *transcriptIndex, 
-                                 int startFusionTranscript, int endFusionTranscript)
+                                 int startFusionTranscript, int endFusionTranscript, int isOne )
 {
   SubInterval *currExon;
   Coordinate *currCoordinate;
   int i,j;
 
   for (i = 0; i < arrayMax (transcript->subIntervals); i++) {
-    currExon = arrp (transcript->subIntervals,i,SubInterval);
-    for (j = currExon->start; j <= currExon->end; j++) {
-      if (j >= startFusionTranscript && j <= endFusionTranscript) {
-        currCoordinate = arrayp (coordinates,arrayMax (coordinates),Coordinate);
-        currCoordinate->genomic = j;
-        currCoordinate->transcript = *transcriptIndex;
-        currCoordinate->chromosome = hlr_strdup (transcript->chromosome);
-        (*transcriptIndex)++;
+    if( isValidExon( i+1 , isOne) ) {
+      currExon = arrp (transcript->subIntervals,i,SubInterval);
+      for (j = currExon->start; j <= currExon->end; j++) {
+	if (j >= startFusionTranscript && j <= endFusionTranscript) {
+	  currCoordinate = arrayp (coordinates,arrayMax (coordinates),Coordinate);
+	  currCoordinate->genomic = j;
+	  currCoordinate->transcript = *transcriptIndex;
+	  currCoordinate->chromosome = hlr_strdup (transcript->chromosome);
+	  (*transcriptIndex)++;
+	}
       }
     }
   }
 }
 
 
+static float getAddingNumber( Inter* currInter ) {
+  float numInter=0.0;
+  if( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) &
+      (currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
+    numInter += 0.25;
+  } else if ( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) |
+	      (currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
+    numInter += 0.5;
+  } else {
+    numInter += 1.0;
+  }
+  return( numInter );
+}
+
+  // from gfrCountPairTypes
+static int pairCount (Array inters)
+{
+  int i,j;
+  Inter *currInter, *nextInter, *currInterV;	
+  GfrPairCount *currPC;
+  Array intersV = arrayCreate( arrayMax(inters), Inter );
+  for( i=0; i<arrayMax(inters); i++) {
+    currInter = arru( inters, i, Inter*);
+    currInterV = arrayp( intersV, i, Inter );
+    *currInterV = *currInter;
+  }
+  arraySort( intersV, (ARRAYORDERF) sortIntersByType);
+  i = 0;
+  while (i < arrayMax ( intersV )) {
+    currInter = arrp (intersV,i,Inter);
+    currPC = arrayp ( countPairs ,arrayMax (countPairs), GfrPairCount);
+    currPC->number1 = currInter->number1;
+    currPC->number2 = currInter->number2;
+    currPC->pairType = currInter->pairType;
+    currPC->count = getAddingNumber( currInter );
+    j = i + 1;
+    while (j < arrayMax (intersV)) {
+      nextInter = arrp (intersV,j,Inter);
+      if (currInter->pairType == nextInter->pairType && 
+	  currInter->number1  == nextInter->number1 && 
+	  currInter->number2  == nextInter->number2) {
+	currPC->count += getAddingNumber( currInter ) ;
+      }
+      else {
+	break;
+      }
+      j++;
+    }
+    i = j;
+  }
+  arrayDestroy( intersV );
+}
+
+
+int isValidPair( Inter* inter ) {
+  GfrPairCount* currPC;
+  int i;
+  int valid=0;
+  
+  for( i = 0; i<arrayMax( countPairs ); i++ ) {
+    currPC = arrp( countPairs, i, GfrPairCount );
+    if( inter->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC &&
+	inter->pairType == currPC->pairType &&
+	inter->number1  == currPC->number1 &&
+	inter->number2  == currPC->number2 &&
+	currPC->count > 1  ) {
+      valid=1;
+      break;
+      }
+
+  }
+  return(valid);
+}
+
 
 static Array convertInterCoordinates (SuperInter *currSuperInter, int isAB)
 {
-  int i,start;
+  int i,j, start;
   int startFusionTranscript1,endFusionTranscript1;
   int startFusionTranscript2,endFusionTranscript2;
-  Inter *currInter;
+  Inter *currInter,*nextInter;
   Array coordinates;
   int transcriptIndex;
+  int validDirection;
 
+  countPairs = arrayCreate(10, GfrPairCount); 
+  pairCount( currSuperInter->inters ); // count the pairs based on the interReads
+ 
   start = 0;
   while (start < arrayMax (currSuperInter->inters)) {
     currInter = arru (currSuperInter->inters,start,Inter*);
-    if (currInter->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC) {
-      break;
+    if( isValidPair( currInter ) ) {
+	break;
     }
-    start++;
+    /*    if (currInter->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC) {
+      break;
+      }//*/
+  start++;
   }
+  
+  // determine the overall start and the overall end
   startFusionTranscript1 = currInter->readStart1;
   endFusionTranscript1 = currInter->readEnd1;
   startFusionTranscript2 = currInter->readStart2;
   endFusionTranscript2 = currInter->readEnd2;
   for (i = start + 1; i < arrayMax (currSuperInter->inters); i++) {
     currInter = arru (currSuperInter->inters,i,Inter*);
-    if (currInter->pairType != GFR_PAIR_TYPE_EXONIC_EXONIC) {
+    if ( isValidPair( currInter )==0 ) {
       continue;
     }
     if (currInter->readStart1 < startFusionTranscript1) {
@@ -360,15 +518,16 @@ static Array convertInterCoordinates (SuperInter *currSuperInter, int isAB)
       endFusionTranscript2 = currInter->readEnd2;
     } 
   }
+
   coordinates = arrayCreate (1000,Coordinate);
   transcriptIndex = 1;
   if (isAB == 1) {
-    addInterCoordinates (currSuperInter->transcript1,coordinates,&transcriptIndex,startFusionTranscript1,endFusionTranscript1);
-    addInterCoordinates (currSuperInter->transcript2,coordinates,&transcriptIndex,startFusionTranscript2,endFusionTranscript2);
+    addInterCoordinates (currSuperInter->transcript1,coordinates,&transcriptIndex,startFusionTranscript1,endFusionTranscript1, 1);
+    addInterCoordinates (currSuperInter->transcript2,coordinates,&transcriptIndex,startFusionTranscript2,endFusionTranscript2, 0);
   }
   else if (isAB == 0) {
-    addInterCoordinates (currSuperInter->transcript2,coordinates,&transcriptIndex,startFusionTranscript2,endFusionTranscript2);
-    addInterCoordinates (currSuperInter->transcript1,coordinates,&transcriptIndex,startFusionTranscript1,endFusionTranscript1);
+    addInterCoordinates (currSuperInter->transcript2,coordinates,&transcriptIndex,startFusionTranscript2,endFusionTranscript2, 0);
+    addInterCoordinates (currSuperInter->transcript1,coordinates,&transcriptIndex,startFusionTranscript1,endFusionTranscript1, 1);
   }
   else {
     die ("Unknown mode: %d",isAB);
@@ -410,6 +569,32 @@ static void calculateIntraOffsets (Array coordinatesTanscript, SuperIntra *currS
 }
 
 
+int isValidInter(Array coordinates, Inter *currInter ) {
+  Coordinate testCoordinate;
+  int index;
+  int valid = 1;
+  testCoordinate.genomic = currInter->readStart1;
+  testCoordinate.chromosome = hlr_strdup (currInter->transcript1->chromosome);
+  if (!arrayFind (coordinates,&testCoordinate,&index,(ARRAYORDERF)sortCoordinates)) {
+    valid=0;
+  }
+  testCoordinate.genomic = currInter->readEnd1;
+  testCoordinate.chromosome = hlr_strdup (currInter->transcript1->chromosome);
+  if (!arrayFind (coordinates,&testCoordinate,&index,(ARRAYORDERF)sortCoordinates)) {
+    valid=0;
+  }
+  testCoordinate.genomic = currInter->readStart2;
+  testCoordinate.chromosome = hlr_strdup (currInter->transcript2->chromosome);
+  if (!arrayFind (coordinates,&testCoordinate,&index,(ARRAYORDERF)sortCoordinates)) {
+    valid=0;
+  }
+  testCoordinate.genomic = currInter->readEnd2;
+  testCoordinate.chromosome = hlr_strdup (currInter->transcript2->chromosome);
+  if (!arrayFind (coordinates,&testCoordinate,&index,(ARRAYORDERF)sortCoordinates)) {
+    valid=0;
+  }
+  return (valid);
+}
 
 static void calculateInterOffsets (Array interCoordinates, SuperInter *currSuperInter, Array interOffsets, int isAB)
 {
@@ -419,7 +604,7 @@ static void calculateInterOffsets (Array interCoordinates, SuperInter *currSuper
 
   for (i = 0; i < arrayMax (currSuperInter->inters); i++) {
     currInter = arru (currSuperInter->inters,i,Inter*);
-    if (currInter->pairType != GFR_PAIR_TYPE_EXONIC_EXONIC) {
+    if (currInter->pairType != GFR_PAIR_TYPE_EXONIC_EXONIC || isValidInter( interCoordinates, currInter )==0 ) {
       continue;
     }
     if (isAB == 1) {
@@ -549,6 +734,8 @@ static int isValidForInsertSizeFilter (SuperInter *currSuperInter)
 
 
 
+
+
 int main (int argc, char *argv[])
 {
   MrfEntry *currMrfEntry;
@@ -589,7 +776,7 @@ int main (int argc, char *argv[])
   srand (time (0));
   buffer = stringCreate (100);
   stringPrintf (buffer,"%s/%s", 
-                confp_get(Conf, "TRANSCRIPT_COMPOSITE_MODEL_DIR"), 
+                confp_get(Conf, "ANNOTATION_DIR"), 
                 confp_get(Conf, "TRANSCRIPT_COMPOSITE_MODEL_FILENAME"));
   intervalFind_addIntervalsToSearchSpace (string (buffer),0);
   inters = arrayCreate (1000000,Inter);
@@ -820,3 +1007,33 @@ int main (int argc, char *argv[])
   return EXIT_SUCCESS;
 }
 
+
+
+/*
+
+int getCompatibleDirection() {
+  int i;
+  int F=0;
+  int R=0;
+  GfrPairCount* currPC;
+  for(i=0; i < arrayMax(countPairs); i++) {
+    currPC = arrp( countPairs, i, GfrPairCount );
+    if( currPC->number1 == currPC->number2 ) {
+      F += currPC->count;
+      R += currPC->count;
+    } else {
+      if( currPC->number1 > currPC->number2 ) 
+	R += currPC->count;
+      else
+	F += currPC->count;
+    }
+  }
+  if( F > R )
+    return 1;
+  else if ( F < R ) {
+    return -1;
+  } else 
+    return 0;
+}
+
+*/
