@@ -33,7 +33,7 @@ debug:
 if USE_DOXYGEN
 
 doxygen:
-	cd doc && doxygen Doxyfile
+	cd doc && doxygen Doxyfile.in
 
 clean-local:
 	cd src/optional && $(MAKE) clean
