@@ -10,12 +10,15 @@
 
 #include "gfr.h"
 
+#include <bios/linestream.h>
+#include <bios/common.h>
+
 /**
   @file geneFusions.c 
   @brief Identification of fusion candidates.
   @details Identification of fusion transcript candidates from paired RNA-seq. 
   @author Andrea Sboner (andrea.sboner.w [at] gmail.com).
-  @version 0.8						
+  @version 0.9						
   @pre A gene annotation file in interval format TRANSCRIPT_COMPOSITE_MODEL_FILENAME.
   @param [in] prefix the prefix that will be used to create fusion transcript IDs, e.g. prefix_00001, prefix_00002, etc.
   @param [in] minNumberOfPairedEndReads minimum number of reads to call a potential candidate, typically 5
@@ -37,12 +40,11 @@ static Array countPairs = NULL; /**< Array to determine the number of reads per 
  */
 typedef struct {
   Interval *transcript; /**< Pointer to the transcript */
-  char* read1; /**< Sequence of the first end */
-  char* read2; /**< Sequence of the first end */
   int readStart1;/**< Start position of the first end */
   int readStart2;/**< Start position of the second end */
   int readEnd1;/**< End position of the first end */
   int readEnd2;/**< End position of the second end */
+  float numIntra;/**<  1 if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
 } Intra;
 
 
@@ -69,7 +71,7 @@ typedef struct {
 */
 typedef struct {
   Interval *transcript; /**< pointer to the transcript */
-  Array intras; /**< Array of all the intra-transcripts reads. @remark Type is Intra* */
+  Array intras; /**< Array of all the intra-transcripts reads. @remark Type is Intra (changed from previous versoin)*/ 
 } SuperIntra;
 
 
@@ -94,34 +96,22 @@ typedef struct {
 } Coordinate; 
 
 /**
-   Calculating the number of intra-transcript reads, accounting for the splice reads in a proper manner.
+   Calculating the number of intra-transcript reads, accounting for the spliced reads in a proper manner.
 */
+
 int getNumberOfIntras( SuperIntra* a ) {
   int i;
   double numberOfIntras=0.0;
   Intra* currIntra;
   for( i=0; i<arrayMax( a->intras); i++) {
     currIntra = arru( a->intras, i, Intra* );
-    if( currIntra->read1==NULL | currIntra->read2==NULL | 
-	(currIntra->readEnd1 - currIntra->readStart1 + 1) == 0 | 
-	(currIntra->readEnd2 - currIntra->readStart2 + 1) == 0 ) 
-      die("Something is wrong with the intra pairs: read1[%s](e%d-s%d +1 )=%d read2[%s](e%d-s%d + 1 )=%d", 
-	  currIntra->read1, currIntra->readEnd1, currIntra->readStart1, (currIntra->readEnd1 - currIntra->readStart1 + 1),
-	  currIntra->read2, currIntra->readEnd2, currIntra->readStart2, (currIntra->readEnd2 - currIntra->readStart2 + 1) );
-    if( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(currIntra->read1) &
-	(currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(currIntra->read2) ) {
-      numberOfIntras += 0.25;
-    } else if ( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(currIntra->read1) |
-		(currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(currIntra->read2) ) {
-      numberOfIntras += 0.5;
-    } else {
-      numberOfIntras += 1.0;
-    }
+    numberOfIntras += currIntra->numIntra;
   }
   return (int) rint( numberOfIntras );
 }
+
 /**
-   Calculating the number of inter-transcript reads, accounting for the splice reads in a proper manner.
+   Calculating the number of inter-transcript reads, accounting for the spliced reads in a proper manner.
 */
 int getNumberOfInters( SuperInter* a ) {
   int i;
@@ -185,7 +175,6 @@ static int sortIntrasByTranscript (Intra *a, Intra *b)
 
 static int sortSuperInters (SuperInter *a, SuperInter *b)
 {
-  //return arrayMax (b->inters) - arrayMax (a->inters);
   return getNumberOfInters(b) - getNumberOfInters(a);
 }
 
@@ -202,7 +191,6 @@ static int getExonNumber (Interval* transcript, int start, int end)
 {
   SubInterval *currExon;
   int i;
-
   for (i = 0; i < arrayMax (transcript->subIntervals); i++) {
     currExon = arrp (transcript->subIntervals,i,SubInterval);
     if (start >= currExon->start && end <= currExon->end) {
@@ -346,7 +334,8 @@ static Array convertIntraCoordinates (Interval *transcript)
 }
 
 
-int isValidExon( int exonNum, int isOne) {
+int isValidExon( int exonNum, int isOne) 
+{
   GfrPairCount* currPC;
   int i, number;
   int valid=0;
@@ -366,7 +355,7 @@ int isValidExon( int exonNum, int isOne) {
 	valid=1;
 	break;
       }
-    }//*/
+    }
   }
   return valid;
 }
@@ -394,6 +383,20 @@ static void addInterCoordinates (Interval *transcript, Array coordinates, int *t
   }
 }
 
+int getAddingIntras( Intra* currIntra, char* read1, char* read2) {
+  float numIntra=0.0;
+  if( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) &
+      (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
+    numIntra += 0.25;
+  } else if ( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) |
+	      (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
+    numIntra += 0.5;
+  } else {
+    numIntra += 1.0;
+  }
+  return ( numIntra );
+}
+
 
 static float getAddingNumber( Inter* currInter ) {
   float numInter=0.0;
@@ -409,7 +412,6 @@ static float getAddingNumber( Inter* currInter ) {
   return( numInter );
 }
 
-  // from gfrCountPairTypes
 static int pairCount (Array inters)
 {
   int i,j;
@@ -559,9 +561,8 @@ static void calculateIntraOffsets (Array coordinatesTanscript, SuperIntra *currS
   int i;
   Intra *currIntra;
   int index1,index2;
-
   for (i = 0; i < arrayMax (currSuperIntra->intras); i++) {
-    currIntra = arru (currSuperIntra->intras,i,Intra*);
+    currIntra = arrp (currSuperIntra->intras,i,Intra);
     index2 = getTranscriptCoordinate (coordinatesTanscript,currIntra->readEnd2,currIntra->transcript->chromosome);
     index1 = getTranscriptCoordinate (coordinatesTanscript,currIntra->readStart1,currIntra->transcript->chromosome);
     array (intraOffsets,arrayMax (intraOffsets),int) = index2 - index1 + 1;
@@ -747,7 +748,7 @@ int main (int argc, char *argv[])
   Interval *transcript1,*transcript2;
   Array inters;
   Inter *currInter,*nextInter;
-  Array intras;
+  //Array intras;
   Intra *currIntra,*nextIntra;
   int i,j;
   int exon1,exon2,intron1,intron2,junction1,junction2;
@@ -763,6 +764,12 @@ int main (int argc, char *argv[])
   double meanInterAB,meanInterBA;
   FILE *fp;
   int mrfLines;
+  char* line;
+  int idx;
+  int numIntras = 0;
+  SuperIntra testSuperIntra; 
+  int index;
+
   char *exonCoordinates1,*exonCoordinates2;
   int minNumberOfPairedEndReads;
 
@@ -780,8 +787,9 @@ int main (int argc, char *argv[])
                 confp_get(Conf, "TRANSCRIPT_COMPOSITE_MODEL_FILENAME"));
   intervalFind_addIntervalsToSearchSpace (string (buffer),0);
   inters = arrayCreate (1000000,Inter);
-  intras = arrayCreate (1000000,Intra);
   mrfLines = 0;
+ 
+  superIntras = arrayCreate (100000,SuperIntra);
   mrf_init ("-");
   while (currMrfEntry = mrf_nextEntry ()) {
     mrfLines++;
@@ -790,9 +798,9 @@ int main (int argc, char *argv[])
     for (i = 0; i < arrayMax (currMrfRead1->blocks); i++) {
       currMrfBlock1 = arrp (currMrfRead1->blocks,i,MrfBlock);
       for (j = 0; j < arrayMax (currMrfRead2->blocks); j++) {
-        currMrfBlock2 = arrp (currMrfRead2->blocks,j,MrfBlock);  
-        intervals1 = arrayCopy (intervalFind_getOverlappingIntervals (currMrfBlock1->targetName,currMrfBlock1->targetStart,currMrfBlock1->targetEnd));    
-        intervals2 = arrayCopy (intervalFind_getOverlappingIntervals (currMrfBlock2->targetName,currMrfBlock2->targetStart,currMrfBlock2->targetEnd));    
+        currMrfBlock2 = arrp (currMrfRead2->blocks,j,MrfBlock);
+        intervals1 = arrayCopy (intervalFind_getOverlappingIntervals (currMrfBlock1->targetName,currMrfBlock1->targetStart,currMrfBlock1->targetEnd));
+        intervals2 = arrayCopy (intervalFind_getOverlappingIntervals (currMrfBlock2->targetName,currMrfBlock2->targetStart,currMrfBlock2->targetEnd));
         if (arrayMax (intervals1) == 1 && arrayMax (intervals2) == 1) {
           transcript1 = arru (intervals1,0,Interval*);
           transcript2 = arru (intervals2,0,Interval*);
@@ -815,54 +823,46 @@ int main (int argc, char *argv[])
             assignPairType (currInter,exon1,intron1,junction1,exon2,intron2,junction2);
           }
           if (transcript1 == transcript2) {
-            if (exon1 > 0 && exon2 > 0) {
-              currIntra = arrayp (intras,arrayMax (intras),Intra);
-              currIntra->transcript = transcript1;
-              currIntra->readStart1 = currMrfBlock1->targetStart;
-              currIntra->readStart2 = currMrfBlock2->targetStart;
-              currIntra->readEnd1 = currMrfBlock1->targetEnd;
-              currIntra->readEnd2 = currMrfBlock2->targetEnd;
-              currIntra->read1 = hlr_strdup (currMrfRead1->sequence);
-              currIntra->read2 = hlr_strdup (currMrfRead2->sequence);
+	    numIntras++;
+            if (exon1 > 0 && exon2 > 0) { // count intra only for reads mapped on exons
+              testSuperIntra.transcript = transcript1;
+	      int ret = arrayFindInsert( superIntras, &testSuperIntra, &idx,(ARRAYORDERF)sortSuperIntras );
+	      currSuperIntra = arrp( superIntras, idx, SuperIntra );
+	      if( ret == 1 ) { // new SuperIntra
+		currSuperIntra->intras = arrayCreate (100,Intra);
+	      }
+	      Intra *currSuperIntraEntry = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
+	      currSuperIntraEntry->transcript= transcript1;
+	      currSuperIntraEntry->readStart1 = currMrfBlock1->targetStart;;
+	      currSuperIntraEntry->readStart2 = currMrfBlock2->targetStart;
+	      currSuperIntraEntry->readEnd1 = currMrfBlock1->targetEnd;
+	      currSuperIntraEntry->readEnd2 = currMrfBlock2->targetEnd;
+	      currSuperIntraEntry->numIntra = getAddingIntras( currSuperIntraEntry, currMrfRead1->sequence, currMrfRead2->sequence);
             }
           }
-        }
+        } //else die("overlapping intervals?");         
+
         arrayDestroy (intervals1);
         arrayDestroy (intervals2);
       }
     }
   }
   mrf_deInit ();
-  arraySort (inters,(ARRAYORDERF)sortIntersByTranscript);
-  arraySort (intras,(ARRAYORDERF)sortIntrasByTranscript);
 
+  // superIntras
   intraOffsets = arrayCreate (1000000,int);
-  superIntras = arrayCreate (100000,SuperIntra);
-  i = 0;
-  while (i < arrayMax (intras)) {
-    currIntra = arrp (intras,i,Intra);
-    currSuperIntra = arrayp (superIntras,arrayMax (superIntras),SuperIntra);
-    currSuperIntra->transcript = currIntra->transcript;
-    currSuperIntra->intras = arrayCreate (100,Intra*);
-    array (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra*) = currIntra;
-    j = i + 1;
-    while (j < arrayMax (intras)) {
-      nextIntra = arrp (intras,j,Intra);
-      if (currIntra->transcript == nextIntra->transcript) {
-        array (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra*) = nextIntra;
-      }
-      else {
-        break;
-      }
-      j++;
-    }
-    i = j;
+  arraySort (superIntras,(ARRAYORDERF)sortSuperIntras);
+  i = 0;  
+  while( i < arrayMax( superIntras ) ) {
+    currSuperIntra = arrayp( superIntras, i, SuperIntra );
     coordinatesTanscript = convertIntraCoordinates (currSuperIntra->transcript);
     calculateIntraOffsets (coordinatesTanscript,currSuperIntra,intraOffsets);
     destroyCoordinates (coordinatesTanscript);
+    i++;
   }
-  arraySort (superIntras,(ARRAYORDERF)sortSuperIntras);
-  
+
+  // superInters
+  arraySort (inters,(ARRAYORDERF)sortIntersByTranscript);  
   superInters = arrayCreate (100000,SuperInter);
   i = 0;
   while (i < arrayMax (inters)) {
@@ -889,7 +889,7 @@ int main (int argc, char *argv[])
   arraySort (superInters,(ARRAYORDERF)sortSuperInters);
 
   warn ("%s_numMrfLines: %d",argv[0],mrfLines);
-  warn ("%s_numIntra: %d",argv[0],arrayMax (intras));
+  warn ("%s_numIntra: %d",argv[0],numIntras);
   warn ("%s_numInter: %d",argv[0],arrayMax (inters));
   warn ("%s_numSuperIntra: %d",argv[0],arrayMax (superIntras));
   warn ("%s_numSuperInter: %d",argv[0],arrayMax (superInters));
@@ -1003,6 +1003,11 @@ int main (int argc, char *argv[])
     fprintf (fp,"%d\n",arru (intraOffsets,i,int));
   }
   fclose (fp);
+  stringPrintf( buffer, "gzip %s.intraOffsets", argv[1] );
+  hlr_system( string(buffer), 1);
+  arrayDestroy( superIntras );
+  arrayDestroy( superInters );
+  arrayDestroy( inters );
   stringDestroy (buffer);
   return EXIT_SUCCESS;
 }
