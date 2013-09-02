@@ -52,7 +52,7 @@ int main (int argc, char *argv[]) {
 	gfr_init ("-");
 	puts (gfr_writeHeader ());
 	while (currGE = gfr_nextEntry ()){
-	  int readLength = strlen( arru( currGE->readsTranscript1, 0, Texta ) );
+	  int readLength = strlen(arru(currGE->readsTranscript1, 0, char*));
 	  numberOfInters = (float) currGE->numInter;
 	  for (i = 0; i < arrayMax (currGE->interReads); i++) {
 	    currGIR = arrp (currGE->interReads,i,GfrInterRead);

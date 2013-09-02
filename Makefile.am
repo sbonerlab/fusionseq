@@ -242,7 +242,7 @@ bp2wig_LDADD = libfusionseq.la -lbios
 export2mrf_SOURCES = src/optional/export2mrf.c
 export2mrf_LDADD = libfusionseq.la -lbios
 
-gfrConfidenceValueTranscript_SOURCES = src/test/gfrConfidenceValueTranscript.c
+gfrConfidenceValueTranscript_SOURCES = src/optional/gfrConfidenceValueTranscript.c
 gfrConfidenceValueTranscript_LDADD = libfusionseq.la -lbios
 
 endif

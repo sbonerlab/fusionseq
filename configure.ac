@@ -48,7 +48,7 @@ AC_PROG_SED
 AC_PROG_MKDIR_P
 AC_PROG_CC
 AC_PROG_CXX
-#ROOT_PATH([], [], [AC_MSG_ERROR([Cannot find [ROOT]])])
+ROOT_PATH([], [], [AC_MSG_ERROR([Cannot find [ROOT]])])
 AC_PROG_LIBTOOL
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN"; then
