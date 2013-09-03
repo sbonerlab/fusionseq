@@ -22,94 +22,79 @@ pkgconfig_DATA = fusionseq.pc
 EXTRA_DIST += fusionseq.pc
 
 # -----------------------------------------------------------------------------
-# Common library
+# Convenience library
 # -----------------------------------------------------------------------------
 
-lib_LTLIBRARIES = libfusionseq.la
-libfusionseq_la_SOURCES = \
+noinst_LTLIBRARIES = src/libfusionseq.la
+src_libfusionseq_la_SOURCES = \
 	src/bp.c \
 	src/gfr.c \
-	src/sqvCircos.c \
-	src/sqvUtil.c \
-	src/sqvWeb.c \
 	src/util.c
-
-libfusionseq_la_LIBADD = -lm -lbios 
-libfusionseq_la_LDFLAGS = -version-info $(FUSIONSEQ_SO_VERSION)
-
-include_HEADERS = \
-	src/bp.h \
-	src/gfr.h \
-	src/sqvCircos.h \
-	src/sqvUtil.h \
-	src/sqvWeb.h \
-	src/util.h \
-	src/uthash.h 
 
 # -----------------------------------------------------------------------------
 # FusionSeq programs
 # -----------------------------------------------------------------------------
 
 bin_PROGRAMS = \
-	geneFusions \
-	gfrAnnotationConsistencyFilter \
-	gfrLargeScaleHomologyFilter \
-	gfrSmallScaleHomologyFilter \
-	gfrAbnormalInsertSizeFilter \
-	gfrAddInfo \
-	gfrProximityFilter \
-	bpFilter \
-	bp2alignment \
-	gfrPCRFilter \
-	gfrBlackListFilter \
-	gfr2bpJunctions \
-	bowtie2bp \
-	sam2bp \
-	gfrConfidenceValues \
-	validateBpJunctions \
-	gfrExpressionConsistencyFilter \
-	gfrMitochondrialFilter \
-	gfrRepeatMaskerFilter \
-	gfrCountPairTypes \
-	gfrRibosomalFilter \
-	gfrSpliceJunctionFilter \
-	gfrClassify \
-	gfrWhiteListFilter \
-	gfrRandomPairingFilter
+	src/geneFusions \
+	src/gfrAnnotationConsistencyFilter \
+	src/gfrLargeScaleHomologyFilter \
+	src/gfrSmallScaleHomologyFilter \
+	src/gfrAbnormalInsertSizeFilter \
+	src/gfrAddInfo \
+	src/gfrProximityFilter \
+	src/bpFilter \
+	src/bp2alignment \
+	src/gfrPCRFilter \
+	src/gfrBlackListFilter \
+	src/gfr2bpJunctions \
+	src/bowtie2bp \
+	src/sam2bp \
+	src/gfrConfidenceValues \
+	src/validateBpJunctions \
+	src/gfrExpressionConsistencyFilter \
+	src/gfrMitochondrialFilter \
+	src/gfrRepeatMaskerFilter \
+	src/gfrCountPairTypes \
+	src/gfrRibosomalFilter \
+	src/gfrSpliceJunctionFilter \
+	src/gfrClassify \
+	src/gfrWhiteListFilter \
+	src/gfrRandomPairingFilter
 
 if BUILD_CGI
 
-EXTRA_PROGRAMS = \
-	geneFusions_cgi \
-	showDetails_cgi \
-	seqViz_cgi \
-	findFusionPartner.cgi
+noinst_PROGRAMS = \
+	src/cgi/geneFusions_cgi \
+	src/cgi/showDetails_cgi \
+	src/cgi/seqViz_cgi \
+	src/cgi/findFusionPartner.cgi
 
 endif
 
 if BUILD_OPTIONAL
 
 bin_PROGRAMS +=	\
-	gfr2bed \
-	gfr2fasta \
-	gfr2gff \
-	bp2wig \
-	export2mrf \
-	gfrConfidenceValueTranscript
+	src/optional/gfr2bed \
+	src/optional/gfr2fasta \
+	src/optional/gfr2gff \
+	src/optional/bp2wig \
+	src/optional/export2mrf \
+	src/optional/gfrConfidenceValueTranscript
 
 endif
 
 if BUILD_TESTS
 
 bin_PROGRAMS += \
-	gfSimulation \
-	bowtiePairedFix \
-	mrfPseudogeneOverlap \
-	plotIntraDistribution \
-	quantifierAddInfo \
-	bp2fasta \
-	bpClustering \
-	bpValidate
+	src/test/gfSimulation \
+	src/test/bowtiePairedFix \
+	src/test/mrfPseudogeneOverlap \
+	src/test/plotIntraDistribution \
+	src/test/quantifierAddInfo \
+	src/test/bp2fasta \
+	src/test/bpClustering \
+	src/test/bpValidate
 
 endif
 
@@ -117,85 +102,85 @@ endif
 # CORE: Finding candidate fusions
 # -----------------------------------------------------------------------------
 
-geneFusions_SOURCES = src/geneFusions.c
-geneFusions_LDADD = libfusionseq.la -lbios -lmrf -lm 
+src_geneFusions_SOURCES = src/geneFusions.c
+src_geneFusions_LDADD = src/libfusionseq.la -lbios -lmrf -lm 
 
-gfrExpressionConsistencyFilter_SOURCES = src/gfrExpressionConsistencyFilter.c
-gfrExpressionConsistencyFilter_LDADD = libfusionseq.la -lbios -lm 
+src_gfrExpressionConsistencyFilter_SOURCES = src/gfrExpressionConsistencyFilter.c
+src_gfrExpressionConsistencyFilter_LDADD = src/libfusionseq.la -lbios -lm 
 
-gfrAnnotationConsistencyFilter_SOURCES = src/gfrAnnotationConsistencyFilter.c
-gfrAnnotationConsistencyFilter_LDADD = libfusionseq.la -lbios -lm
+src_gfrAnnotationConsistencyFilter_SOURCES = src/gfrAnnotationConsistencyFilter.c
+src_gfrAnnotationConsistencyFilter_LDADD = src/libfusionseq.la -lbios -lm
 
-gfrRibosomalFilter_SOURCES = src/gfrRibosomalFilter.c
-gfrRibosomalFilter_LDADD = libfusionseq.la -lbios
+src_gfrRibosomalFilter_SOURCES = src/gfrRibosomalFilter.c
+src_gfrRibosomalFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrMitochondrialFilter_SOURCES = src/gfrMitochondrialFilter.c
-gfrMitochondrialFilter_LDADD = libfusionseq.la -lbios
+src_gfrMitochondrialFilter_SOURCES = src/gfrMitochondrialFilter.c
+src_gfrMitochondrialFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrLargeScaleHomologyFilter_SOURCES = src/gfrLargeScaleHomologyFilter.c
-gfrLargeScaleHomologyFilter_LDADD = libfusionseq.la -lbios
+src_gfrLargeScaleHomologyFilter_SOURCES = src/gfrLargeScaleHomologyFilter.c
+src_gfrLargeScaleHomologyFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrSmallScaleHomologyFilter_SOURCES = src/gfrSmallScaleHomologyFilter.c
-gfrSmallScaleHomologyFilter_LDADD = libfusionseq.la -lbios
+src_gfrSmallScaleHomologyFilter_SOURCES = src/gfrSmallScaleHomologyFilter.c
+src_gfrSmallScaleHomologyFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrAbnormalInsertSizeFilter_SOURCES = src/gfrAbnormalInsertSizeFilter.c
-gfrAbnormalInsertSizeFilter_LDADD = libfusionseq.la -lbios
+src_gfrAbnormalInsertSizeFilter_SOURCES = src/gfrAbnormalInsertSizeFilter.c
+src_gfrAbnormalInsertSizeFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrPCRFilter_SOURCES = src/gfrPCRFilter.c
-gfrPCRFilter_LDADD = libfusionseq.la -lbios
+src_gfrPCRFilter_SOURCES = src/gfrPCRFilter.c
+src_gfrPCRFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrBlackListFilter_SOURCES = src/gfrBlackListFilter.c
-gfrBlackListFilter_LDADD = libfusionseq.la -lbios
+src_gfrBlackListFilter_SOURCES = src/gfrBlackListFilter.c
+src_gfrBlackListFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrProximityFilter_SOURCES = src/gfrProximityFilter.c
-gfrProximityFilter_LDADD = libfusionseq.la -lbios
+src_gfrProximityFilter_SOURCES = src/gfrProximityFilter.c
+src_gfrProximityFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrAddInfo_SOURCES = src/gfrAddInfo.c
-gfrAddInfo_LDADD = libfusionseq.la -lbios
+src_gfrAddInfo_SOURCES = src/gfrAddInfo.c
+src_gfrAddInfo_LDADD = src/libfusionseq.la -lbios
 
-gfrConfidenceValues_SOURCES = src/gfrConfidenceValues.c
-gfrConfidenceValues_LDADD = libfusionseq.la -lbios -lmrf
+src_gfrConfidenceValues_SOURCES = src/gfrConfidenceValues.c
+src_gfrConfidenceValues_LDADD = src/libfusionseq.la -lbios -lmrf
 
-gfrRepeatMaskerFilter_SOURCES = src/gfrRepeatMaskerFilter.c
-gfrRepeatMaskerFilter_LDADD = libfusionseq.la -lbios -lm
+src_gfrRepeatMaskerFilter_SOURCES = src/gfrRepeatMaskerFilter.c
+src_gfrRepeatMaskerFilter_LDADD = src/libfusionseq.la -lbios -lm
 
-gfrCountPairTypes_SOURCES = src/gfrCountPairTypes.c
-gfrCountPairTypes_LDADD = libfusionseq.la -lbios -lm
+src_gfrCountPairTypes_SOURCES = src/gfrCountPairTypes.c
+src_gfrCountPairTypes_LDADD = src/libfusionseq.la -lbios -lm
 
-gfrSpliceJunctionFilter_SOURCES = src/gfrSpliceJunctionFilter.c
-gfrSpliceJunctionFilter_LDADD = libfusionseq.la -lbios
+src_gfrSpliceJunctionFilter_SOURCES = src/gfrSpliceJunctionFilter.c
+src_gfrSpliceJunctionFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrClassify_SOURCES = src/gfrClassify.c
-gfrClassify_LDADD = libfusionseq.la -lbios -lm
+src_gfrClassify_SOURCES = src/gfrClassify.c
+src_gfrClassify_LDADD = src/libfusionseq.la -lbios -lm
 
-gfrWhiteListFilter_SOURCES = src/gfrWhiteListFilter.c
-gfrWhiteListFilter_LDADD = libfusionseq.la -lbios
+src_gfrWhiteListFilter_SOURCES = src/gfrWhiteListFilter.c
+src_gfrWhiteListFilter_LDADD = src/libfusionseq.la -lbios
 
-gfrRandomPairingFilter_SOURCES = src/gfrRandomPairingFilter.c
-gfrRandomPairingFilter_LDADD = libfusionseq.la -lbios
+src_gfrRandomPairingFilter_SOURCES = src/gfrRandomPairingFilter.c
+src_gfrRandomPairingFilter_LDADD = src/libfusionseq.la -lbios
 
 # -----------------------------------------------------------------------------
 # CORE: Identifying sequences of the junction
 # -----------------------------------------------------------------------------
 
-gfr2bpJunctions_SOURCES = src/gfr2bpJunctions.c
-gfr2bpJunctions_LDADD = libfusionseq.la -lbios -lm
+src_gfr2bpJunctions_SOURCES = src/gfr2bpJunctions.c
+src_gfr2bpJunctions_LDADD = src/libfusionseq.la -lbios -lm
 
-bowtie2bp_SOURCES = src/bowtie2bp.c
-bowtie2bp_LDADD = libfusionseq.la -lbios
+src_bowtie2bp_SOURCES = src/bowtie2bp.c
+src_bowtie2bp_LDADD = src/libfusionseq.la -lbios
 
-sam2bp_SOURCES = src/sam2bp.c
-sam2bp_LDADD = libfusionseq.la -lbios
+src_sam2bp_SOURCES = src/sam2bp.c
+src_sam2bp_LDADD = src/libfusionseq.la -lbios
 
-validateBpJunctions_SOURCES = src/validateBpJunctions.c
-validateBpJunctions_LDADD = libfusionseq.la -lbios
+src_validateBpJunctions_SOURCES = src/validateBpJunctions.c
+src_validateBpJunctions_LDADD = src/libfusionseq.la -lbios
 
-bpFilter_SOURCES = src/bpFilter.cpp
-bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
-bpFilter_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
+src_bpFilter_SOURCES = src/bpFilter.cpp
+src_bpFilter_CXXFLAGS = -D_REENTRANT -pthread -m64
+src_bpFilter_LDADD = src/libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
 
-bp2alignment_SOURCES = src/bp2alignment.c
-bp2alignment_LDADD = libfusionseq.la -lbios
+src_bp2alignment_SOURCES = src/bp2alignment.c
+src_bp2alignment_LDADD = src/libfusionseq.la -lbios
 
 
 # -----------------------------------------------------------------------------
@@ -204,17 +189,21 @@ bp2alignment_LDADD = libfusionseq.la -lbios
 
 if BUILD_CGI
 
-geneFusions_cgi_SOURCES = src/cgi/geneFusions_cgi.c
-geneFusions_cgi_LDADD = libfusionseq.la -lbios
+src_cgi_geneFusions_cgi_SOURCES = src/cgi/geneFusions_cgi.c
+src_cgi_geneFusions_cgi_LDADD = src/libfusionseq.la -lbios
 
-showDetails_cgi_SOURCES = src/cgi/showDetails_cgi.c
-showDetails_cgi_LDADD = libfusionseq.la -lbios
+src_cgi_showDetails_cgi_SOURCES = src/cgi/showDetails_cgi.c
+src_cgi_showDetails_cgi_LDADD = src/libfusionseq.la -lbios
 
-seqViz_cgi_SOURCES = src/cgi/seqViz_cgi.c
-seqViz_cgi_LDADD = libfusionseq.la -lbios -lmrf
+src_cgi_seqViz_cgi_SOURCES = \
+	src/cgi/sqvUtil.c \
+	src/cgi/sqvWeb.c \
+	src/cgi/sqvCircos.c \
+	src/cgi/seqViz_cgi.c
+src_cgi_seqViz_cgi_LDADD = src/libfusionseq.la -lbios -lmrf
 
-findFusionPartner_cgi_SOURCES = src/cgi/findFusionPartner_cgi.c
-findFusionPartner_cgi_LDADD = libfusionseq.la -lbios
+src_cgi_findFusionPartner_cgi_SOURCES = src/cgi/findFusionPartner_cgi.c
+src_cgi_findFusionPartner_cgi_LDADD = src/libfusionseq.la -lbios
 
 endif
 
@@ -224,26 +213,26 @@ endif
 
 if BUILD_OPTIONAL
 
-# gfr2images_SOURCES = src/optional/gfr2images.c
-# gfr2images_LDADD = libfusionseq.la -lbios -lgd -lm
+# src_optional_gfr2images_SOURCES = src/optional/gfr2images.c
+# src_optional_gfr2images_LDADD = src/libfusionseq.la -lbios -lgd -lm
 
-gfr2bed_SOURCES = src/optional/gfr2bed.c
-gfr2bed_LDADD = libfusionseq.la -lbios
+src_optional_gfr2bed_SOURCES = src/optional/gfr2bed.c
+src_optional_gfr2bed_LDADD = src/libfusionseq.la -lbios
 
-gfr2fasta_SOURCES = src/optional/gfr2fasta.c
-gfr2fasta_LDADD = libfusionseq.la -lbios
+src_optional_gfr2fasta_SOURCES = src/optional/gfr2fasta.c
+src_optional_gfr2fasta_LDADD = src/libfusionseq.la -lbios
 
-gfr2gff_SOURCES = src/optional/gfr2gff.c
-gfr2gff_LDADD = libfusionseq.la -lbios
+src_optional_gfr2gff_SOURCES = src/optional/gfr2gff.c
+src_optional_gfr2gff_LDADD = src/libfusionseq.la -lbios
 
-bp2wig_SOURCES = src/optional/bp2wig.c
-bp2wig_LDADD = libfusionseq.la -lbios
+src_optional_bp2wig_SOURCES = src/optional/bp2wig.c
+src_optional_bp2wig_LDADD = src/libfusionseq.la -lbios
 
-export2mrf_SOURCES = src/optional/export2mrf.c
-export2mrf_LDADD = libfusionseq.la -lbios
+src_optional_export2mrf_SOURCES = src/optional/export2mrf.c
+src_optional_export2mrf_LDADD = src/libfusionseq.la -lbios
 
-gfrConfidenceValueTranscript_SOURCES = src/optional/gfrConfidenceValueTranscript.c
-gfrConfidenceValueTranscript_LDADD = libfusionseq.la -lbios
+src_optional_gfrConfidenceValueTranscript_SOURCES = src/optional/gfrConfidenceValueTranscript.c
+src_optional_gfrConfidenceValueTranscript_LDADD = src/libfusionseq.la -lbios
 
 endif
 
@@ -253,30 +242,30 @@ endif
 
 if BUILD_TESTS
 
-gfSimulation_SOURCES = src/test/gfSimulation.c
-gfSimulation_LDADD = libfusionseq.la -lbios -lm
+src_test_gfSimulation_SOURCES = src/test/gfSimulation.c
+src_test_gfSimulation_LDADD = src/libfusionseq.la -lbios -lm
 
-bowtiePairedFix_SOURCES = src/test/bowtiePairedFix.c
-bowtiePairedFix_LDADD = libfusionseq.la -lbios -lmrf -lm
+src_test_bowtiePairedFix_SOURCES = src/test/bowtiePairedFix.c
+src_test_bowtiePairedFix_LDADD = src/libfusionseq.la -lbios -lmrf -lm
 
-mrfPseudogeneOverlap_SOURCES = src/test/mrfPseudogeneOverlap.c
-mrfPseudogeneOverlap_LDADD = libfusionseq.la -lbios -lmrf -lm
+src_test_mrfPseudogeneOverlap_SOURCES = src/test/mrfPseudogeneOverlap.c
+src_test_mrfPseudogeneOverlap_LDADD = src/libfusionseq.la -lbios -lmrf -lm
 
-quantifierAddInfo_SOURCES = src/test/quantifierAddInfo.c
-quantifierAddInfo_LDADD = libfusionseq.la -lbios
+src_test_quantifierAddInfo_SOURCES = src/test/quantifierAddInfo.c
+src_test_quantifierAddInfo_LDADD = src/libfusionseq.la -lbios
 
-plotIntraDistribution_SOURCES = src/test/plotIntraDistribution.cpp
-plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
-plotIntraDistribution_LDADD = libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
+src_test_plotIntraDistribution_SOURCES = src/test/plotIntraDistribution.cpp
+src_test_plotIntraDistribution_CXXFLAGS = -D_REENTRANT -pthread -m64
+src_test_plotIntraDistribution_LDADD = src/libfusionseq.la -lstdc++ -lbios -L@ROOTLIBDIR@ @ROOTGLIBS@ @ROOTLIBS@ -ldl
 
-bp2fasta_SOURCES = src/test/bp2fasta.c
-bp2fasta_LDADD = libfusionseq.la -lbios -lm
+src_test_bp2fasta_SOURCES = src/test/bp2fasta.c
+src_test_bp2fasta_LDADD = src/libfusionseq.la -lbios -lm
 
-bpClustering_SOURCES = src/test/bpClustering.c
-bpClustering_LDADD = libfusionseq.la -lbios -lm
+src_test_bpClustering_SOURCES = src/test/bpClustering.c
+src_test_bpClustering_LDADD = src/libfusionseq.la -lbios -lm
 
-bpValidate_SOURCES = src/test/bpValidate.c
-bpValidate_LDADD = libfusionseq.la -lbios -lm
+src_test_bpValidate_SOURCES = src/test/bpValidate.c
+src_test_bpValidate_LDADD = src/libfusionseq.la -lbios -lm
 
 endif
 

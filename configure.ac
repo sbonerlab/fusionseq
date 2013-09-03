@@ -13,14 +13,13 @@ AC_CONFIG_HEADERS([config.h])
 #------------------------------------------------------------------------------
 # Initialize automake
 #------------------------------------------------------------------------------
-AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability subdir-objects])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+LT_INIT
 
 #------------------------------------------------------------------------------
-# Initialize libtool
+# Initialize automake
 #------------------------------------------------------------------------------
-LT_INIT
-AC_SUBST([FUSIONSEQ_SO_VERSION], [2:7:0])
+AM_INIT_AUTOMAKE([-Wall -Werror -Wno-portability subdir-objects])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 #------------------------------------------------------------------------------
 # Options for disabling features.
