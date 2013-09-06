@@ -92,11 +92,11 @@ int main (int argc, char *argv[])
     die("%s:\tCannot find .fusionseqrc", argv[0]);
     return EXIT_FAILURE;
   } 
-  if ((conf = confp_open(getenv("ANNOTATION_DIR"))) == NULL) {
+  if ((confp_get( conf,"ANNOTATION_DIR")) == NULL) {
     die("%s:\tCannot find ANNOTATION_DIR in the configuration file: %s", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   } 
-  if ((conf = confp_open(getenv("KNOWN_GENE_TREE_FAM_FILENAME"))) == NULL) {
+  if ((confp_get( conf,"KNOWN_GENE_TREE_FAM_FILENAME")) == NULL) {
     die("%s:\tCannot find KNOWN_GENE_TREE_FAM_FILENAME in the configuration file: %sc", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   } 
