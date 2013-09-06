@@ -7,7 +7,15 @@
 #include "util.h"
 #include "gfr.h"
 
-
+/**
+  \file gfrLargeScaleHomologyFilter.c 
+  \brief Removal of mismapping artifacts.
+  \details Filter to remove artifacts between paralogous genes as defined by TreeFam.
+  \author Andrea Sboner (andrea.sboner.w [at] gmail.com).
+  \version 0.8
+  \date 2013.09.06						
+  \pre It requires 'knownToTreefam.txt' or similar file.
+ */
 
 static int sortKgTreeFamsByTranscriptName (KgTreeFam *a, KgTreeFam *b) 
 {
@@ -80,8 +88,18 @@ int main (int argc, char *argv[])
 
   config *conf;
 
-  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL)
+  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+    die("%s:\tCannot find .fusionseqrc", argv[0]);
     return EXIT_FAILURE;
+  } 
+  if ((conf = confp_open(getenv("ANNOTATION_DIR"))) == NULL) {
+    die("%s:\tCannot find ANNOTATION_DIR in the configuration file: %s", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  } 
+  if ((conf = confp_open(getenv("KNOWN_GENE_TREE_FAM_FILENAME"))) == NULL) {
+    die("%s:\tCannot find KNOWN_GENE_TREE_FAM_FILENAME in the configuration file: %sc", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  } 
 
   buffer = stringCreate (100);
   stringPrintf (buffer,"%s/%s",
