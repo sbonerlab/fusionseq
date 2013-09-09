@@ -331,7 +331,7 @@ static GfrEntry* gfr_processNextEntry (int freeMemory)
       while (token = wordNext (w)) {
 	columnType = arru (columnTypes,index,int);
 	if (columnType == GFR_COLUMN_TYPE_NUM_INTER) {
-	  currEntry->numInter = atoi (token);
+	  currEntry->numInter = atof (token);
 	}
 	else if (columnType == GFR_COLUMN_TYPE_INTER_MEAN_AB) {
 	  currEntry->interMeanAB = atof (token);
@@ -346,10 +346,10 @@ static GfrEntry* gfr_processNextEntry (int freeMemory)
           currEntry->pValueBA = atof (token);
 	}
         else if (columnType == GFR_COLUMN_TYPE_NUM_INTRA1) {
-          currEntry->numIntra1 = atoi (token);
+          currEntry->numIntra1 = atof (token);
 	}
         else if (columnType == GFR_COLUMN_TYPE_NUM_INTRA2) {
-          currEntry->numIntra2 = atoi (token);
+          currEntry->numIntra2 = atof (token);
 	}
         else if (columnType == GFR_COLUMN_TYPE_FUSION_TYPE) {
           currEntry->fusionType = hlr_strdup (token);

@@ -135,13 +135,13 @@ typedef struct {
    Data structure of the fusion transcript candidates
  */
 typedef struct {
-  int numInter; /**< number of inter-transcript reads supporting the fusion candidate */
+  double numInter; /**< number of inter-transcript reads supporting the fusion candidate */
   double interMeanAB;/**< median insert size of the minimal fusion transcript @attention it consider transcript 1 before transcript 2 */
   double interMeanBA;/**< median insert size of the minimal fusion transcript @attention it consider transcript 2 before transcript 1 */
   double pValueAB;/**< p-value of the median insert size @attention it consider transcript 1 before transcript 2 */
   double pValueBA;/**< p-value of the median insert size @attention it consider transcript 2 before transcript 1 */
-  int numIntra1;/**< number of intra-transcript reads on transcript 1 */
-  int numIntra2;/**< number of intra-transcript reads on transcript 2 */
+  double numIntra1;/**< number of intra-transcript reads on transcript 1 */
+  double numIntra2;/**< number of intra-transcript reads on transcript 2 */
   char *fusionType;/**< fusion type: inter, intra, read-through, or cis */
   char *nameTranscript1;/**< ID of transcript 1 */
   char *chromosomeTranscript1;/**< chromosome of transcript 1 */
