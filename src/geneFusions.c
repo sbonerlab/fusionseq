@@ -44,7 +44,6 @@ typedef struct {
   int readStart2;/**< Start position of the second end */
   int readEnd1;/**< End position of the first end */
   int readEnd2;/**< End position of the second end */
-  float numIntra;/**<  1 if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
 } Intra;
 
 
@@ -72,6 +71,7 @@ typedef struct {
 typedef struct {
   Interval *transcript; /**< pointer to the transcript */
   Array intras; /**< Array of all the intra-transcripts reads. @remark Type is Intra (changed from previous versoin)*/ 
+  float numIntras; /**< number of intra-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
 } SuperIntra;
 
 
@@ -95,20 +95,6 @@ typedef struct {
   int transcript; /**< transcriptomic location */
 } Coordinate; 
 
-/**
-   Calculating the number of intra-transcript reads, accounting for the spliced reads in a proper manner.
-*/
-
-int getNumberOfIntras( SuperIntra* a ) {
-  int i;
-  double numberOfIntras=0.0;
-  Intra* currIntra;
-  for( i=0; i<arrayMax( a->intras); i++) {
-    currIntra = arru( a->intras, i, Intra* );
-    numberOfIntras += currIntra->numIntra;
-  }
-  return (int) rint( numberOfIntras );
-}
 
 /**
    Calculating the number of inter-transcript reads, accounting for the spliced reads in a proper manner.
@@ -383,7 +369,7 @@ static void addInterCoordinates (Interval *transcript, Array coordinates, int *t
   }
 }
 
-int getAddingIntras( Intra* currIntra, char* read1, char* read2) {
+float getAddingIntras( Intra* currIntra, char* read1, char* read2) {
   float numIntra=0.0;
   if( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) &
       (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
@@ -756,7 +742,7 @@ int main (int argc, char *argv[])
   Array superInters;
   SuperIntra *currSuperIntra,*superIntra1,*superIntra2;
   Array superIntras;
-  Array coordinatesTanscript;
+  Array coordinatesTranscript;
   Array interCoordinatesAB,interCoordinatesBA;
   Array intraOffsets;
   Array interOffsetsAB,interOffsetsBA;
@@ -831,14 +817,14 @@ int main (int argc, char *argv[])
 	      if( ret == 1 ) { // new SuperIntra
 		currSuperIntra->intras = arrayCreate (100,Intra);
 	      }
-	      Intra *currSuperIntraEntry = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
-	      currSuperIntraEntry->transcript= transcript1;
-	      currSuperIntraEntry->readStart1 = currMrfBlock1->targetStart;;
-	      currSuperIntraEntry->readStart2 = currMrfBlock2->targetStart;
-	      currSuperIntraEntry->readEnd1 = currMrfBlock1->targetEnd;
-	      currSuperIntraEntry->readEnd2 = currMrfBlock2->targetEnd;
-	      currSuperIntraEntry->numIntra = getAddingIntras( currSuperIntraEntry, currMrfRead1->sequence, currMrfRead2->sequence);
-            }
+	      Intra *currSuperIntraIntrasEntry = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
+	      currSuperIntraIntrasEntry->transcript= transcript1;
+	      currSuperIntraIntrasEntry->readStart1 = currMrfBlock1->targetStart;
+	      currSuperIntraIntrasEntry->readStart2 = currMrfBlock2->targetStart;
+	      currSuperIntraIntrasEntry->readEnd1 = currMrfBlock1->targetEnd;
+	      currSuperIntraIntrasEntry->readEnd2 = currMrfBlock2->targetEnd;
+	      currSuperIntra->numIntras += getAddingIntras( currSuperIntraIntrasEntry, currMrfRead1->sequence, currMrfRead2->sequence);
+	    }
           }
         } //else die("overlapping intervals?");         
 
@@ -855,9 +841,9 @@ int main (int argc, char *argv[])
   i = 0;  
   while( i < arrayMax( superIntras ) ) {
     currSuperIntra = arrayp( superIntras, i, SuperIntra );
-    coordinatesTanscript = convertIntraCoordinates (currSuperIntra->transcript);
-    calculateIntraOffsets (coordinatesTanscript,currSuperIntra,intraOffsets);
-    destroyCoordinates (coordinatesTanscript);
+    coordinatesTranscript = convertIntraCoordinates (currSuperIntra->transcript);
+    calculateIntraOffsets (coordinatesTranscript,currSuperIntra,intraOffsets);
+    destroyCoordinates (coordinatesTranscript);
     i++;
   }
 
@@ -949,18 +935,19 @@ int main (int argc, char *argv[])
       pvalueAB = -1;
       pvalueBA = -1;
     }
-    superIntra1 = getSuperIntra (superIntras,currSuperInter->transcript1);
+    // get the corresponding intra-transcript information
+    superIntra1 = getSuperIntra (superIntras,currSuperInter->transcript1); 
     superIntra2 = getSuperIntra (superIntras,currSuperInter->transcript2);
     exonCoordinates1 = hlr_strdup (exonCoordinates2string (currSuperInter->transcript1->subIntervals));
     exonCoordinates2 = hlr_strdup (exonCoordinates2string (currSuperInter->transcript2->subIntervals));
-    printf ("%d\t%.2f\t%.2f\t%.5f\t%.5f\t%d\t%d\t%s\t",
-            getNumberOfInters ( currSuperInter ),
+    printf ("%d\t%.2f\t%.2f\t%.5f\t%.5f\t%f\t%f\t%s\t",
+	    getNumberOfInters ( currSuperInter ),
 	    meanInterAB,meanInterBA,pvalueAB,pvalueBA,
-            superIntra1 ? getNumberOfIntras(superIntra1) : 0,
-	    superIntra2 ? getNumberOfIntras(superIntra2) : 0,
-            strEqual (currSuperInter->transcript1->chromosome,currSuperInter->transcript2->chromosome) ? "cis" : "trans");
+	    superIntra1 ? superIntra1->numIntras : 0,
+	    superIntra2 ? superIntra2->numIntras : 0,
+	    strEqual (currSuperInter->transcript1->chromosome,currSuperInter->transcript2->chromosome) ? "cis" : "trans");
     printf ("%s\t%d\t%s\t%s\t%c\t%d\t%d\t",
-            currSuperInter->transcript1->name,
+	    currSuperInter->transcript1->name,
 	    arrayMax (currSuperInter->transcript1->subIntervals),
 	    exonCoordinates1,
 	    currSuperInter->transcript1->chromosome,
@@ -968,7 +955,7 @@ int main (int argc, char *argv[])
 	    currSuperInter->transcript1->start,
 	    currSuperInter->transcript1->end);
     printf ("%s\t%d\t%s\t%s\t%c\t%d\t%d\t",
-            currSuperInter->transcript2->name,
+	    currSuperInter->transcript2->name,
 	    arrayMax (currSuperInter->transcript2->subIntervals),
 	    exonCoordinates2,
 	    currSuperInter->transcript2->chromosome,
@@ -978,10 +965,10 @@ int main (int argc, char *argv[])
     for (j = 0; j < arrayMax (currSuperInter->inters); j++) {
       currInter = arru (currSuperInter->inters,j,Inter*);
       printf ("%d,%d,%d,%d,%d,%d,%d%s",
-              currInter->pairType,currInter->number1,currInter->number2,
-              currInter->readStart1,currInter->readEnd1,
-              currInter->readStart2,currInter->readEnd2, 
-              j < arrayMax (currSuperInter->inters) - 1 ? "|" : "\t");
+	      currInter->pairType,currInter->number1,currInter->number2,
+	      currInter->readStart1,currInter->readEnd1,
+	      currInter->readStart2,currInter->readEnd2, 
+	      j < arrayMax (currSuperInter->inters) - 1 ? "|" : "\t");
     }
     printf ("%s_%05d\t",argv[1],i + 1);
     for (j = 0; j < arrayMax (currSuperInter->inters); j++) {
