@@ -10,6 +10,7 @@
 #include <bios/fasta.h>
 #include <bios/intervalFind.h>
 #include <bios/blastParser.h>
+#include <bios/linestream.h>
 
 #include "gfr.h"
 #include "util.h"
@@ -24,10 +25,10 @@
   \pre It requires 'blat' and 'fastx' to be on the path.
  */
 
-static int sortBowtieQueriesBySequenceName (BowtieQuery *a, BowtieQuery *b)
+/*static int sortBowtieQueriesBySequenceName (BowtieQuery *a, BowtieQuery *b)
 {
   return strcmp (a->sequenceName,b->sequenceName);
-}
+  }*/
 
 
 
@@ -60,18 +61,55 @@ int main (int argc, char *argv[])
   BowtieQuery *currBQ,testBQ;
   BowtieEntry *currBE;
   Texta seqNames;
-  int readSize1, readSize2;
+  int readSize1, readSize2, minReadSize;
   Array bowtieQueries;
   char transcriptNumber;
   int isHomologous,homologousCount;
   int count;
   int countRemoved;
+  unsigned short int tooMany;
   BlatQuery *blQ;
 
   config *conf;
 
-  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL)
+  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+    die("%s:\tCannot find .fusionseqrc", argv[0]);
     return EXIT_FAILURE;
+  } 
+  if ( (confp_get( conf, "BLAT_TWO_BIT_TO_FA")) == NULL) {
+    die("%s:\tCannot find BLAT_TWO_BIT_TO_FA in the configuration file: %s", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  } 
+  if ( (confp_get( conf,"BLAT_DATA_DIR")) == NULL) {
+    die("%s:\tCannot find BLAT_DATA_DIR in the configuration file: %sc", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  } 
+
+  cmd = stringCreate (100);
+  // initializing the gfServers
+  stringPrintf( cmd, "gfServer status localhost 9090 2> /dev/null" );
+  LineStream ls = ls_createFromPipe( string(cmd) );
+  if( ls_nextLine( ls ) == NULL  ) { // not initialized
+    ls_destroy_func( ls );
+    stringPrintf( cmd , "gfServer -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_genome.log start localhost 9090 %s/%s  &", confp_get(conf, "TMP_DIR"), confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"));
+    hlr_system( string( cmd ), 0 );
+    long int startTime = time(0);
+    stringPrintf( cmd , "gfServer status localhost 9090 2> /dev/null");
+    int initialized=0;
+    while( !initialized && (time(0)-startTime)<600 ) {
+      ls = ls_createFromPipe( string(cmd) );
+      if( ls_nextLine( ls ) != NULL ) initialized=1; 
+      ls_destroy_func( ls );
+    }
+    if( initialized==0 )  {
+      die("gfServer for %s/%s not initialized", confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME")); 
+      return EXIT_FAILURE;
+    }
+  } 
+  // end initialization
+  
+  
+
   gfr_init ("-");
   gfrEntries =  gfr_parse ();
   if (arrayMax (gfrEntries) == 0){
@@ -81,7 +119,6 @@ int main (int argc, char *argv[])
   }
   seqNames = textCreate (10000); 
   buffer = stringCreate (100);
-  cmd = stringCreate (100);
   fnSequencesToAlign = stringCreate (100);
   count = 0;
   countRemoved = 0;
@@ -90,92 +127,134 @@ int main (int argc, char *argv[])
   for (i = 0; i < arrayMax (gfrEntries); i++) {
     currGE = arrp (gfrEntries,i,GfrEntry);
     homologousCount = 0;
-  
-    if (((double)homologousCount / arrayMax(currGE->readsTranscript1)) <= atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) { 
-      // creating two fasta files with the two genes
-      //warn("%d %s", i, currGE->id);
-      stringPrintf( cmd, "%s %s/%s -seq=%s -start=%d -end=%d %s_transcript1.fa", confp_get(conf, "BLAT_TWO_BIT_TO_FA") , confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"), currGE->chromosomeTranscript1, currGE->startTranscript1, currGE->endTranscript1, currGE->id);
-      hlr_system( string(cmd) , 0);   
-      stringPrintf( cmd, "%s %s/%s -seq=%s -start=%d -end=%d %s_transcript2.fa", confp_get(conf, "BLAT_TWO_BIT_TO_FA"),  confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"), currGE->chromosomeTranscript2, currGE->startTranscript2, currGE->endTranscript2, currGE->id);
-      hlr_system( string(cmd) , 0);   
-
-      Stringa fa1 = stringCreate( 100 ); 
-      Stringa fa2 = stringCreate( 100 );
-
-      // creating the two fasta files with the reads
-      stringPrintf( fa1, "%s_reads1.fa", currGE->id);
-      if (!(freads1 = fopen ( string(fa1) ,"w"))) {
-	die ("Unable to open file: %s",string (fa1));
-      }   
-      // writing the reads of the first end into file
-      for (l = 0; l < arrayMax (currGE->readsTranscript1); l++) {
-	char* currRead1 = hlr_strdup( textItem (currGE->readsTranscript1,l)); // read1
-	readSize1 = strlen( currRead1 );
-	fprintf( freads1, ">%d\n%s\n", l, currRead1 );
-	hlr_free( currRead1 );
+    minReadSize=1000;
+    //if (((double)homologousCount / arrayMax(currGE->readsTranscript1)) <= atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) { 
+    // creating two fasta files with the two genes
+    //warn("%d %s", i, currGE->id);
+    stringPrintf( cmd, "%s %s/%s -seq=%s -start=%d -end=%d %s_transcript1.fa", confp_get(conf, "BLAT_TWO_BIT_TO_FA") , confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"), currGE->chromosomeTranscript1, currGE->startTranscript1, currGE->endTranscript1, currGE->id);
+    hlr_system( string(cmd) , 0);   
+    stringPrintf( cmd, "%s %s/%s -seq=%s -start=%d -end=%d %s_transcript2.fa", confp_get(conf, "BLAT_TWO_BIT_TO_FA"),  confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"), currGE->chromosomeTranscript2, currGE->startTranscript2, currGE->endTranscript2, currGE->id);
+    hlr_system( string(cmd) , 0);   
+    
+    Stringa fa1 = stringCreate( 100 ); 
+    Stringa fa2 = stringCreate( 100 );
+    
+    // creating the two fasta files with the reads
+    stringPrintf( fa1, "%s_reads1.fa", currGE->id);
+    if (!(freads1 = fopen ( string(fa1) ,"w"))) {
+      die ("Unable to open file: %s",string (fa1));
+    }   
+    // writing the reads of the first end into file
+    
+    for (l = 0; l < arrayMax (currGE->readsTranscript1); l++) {
+      char* currRead1 = hlr_strdup( textItem (currGE->readsTranscript1,l)); // read1
+      readSize1 = strlen( currRead1 );
+      if( readSize1 < minReadSize ) minReadSize = readSize1;
+      fprintf( freads1, ">%d\n%s\n", l, currRead1 );
+      hlr_free( currRead1 );
+    }
+    fclose( freads1 );
+    
+    stringPrintf( fa2, "%s_reads2.fa", currGE->id);
+    if (!(freads2 = fopen ( string(fa2) ,"w"))) {
+      die ("Unable to open file: %s",string (fa2));
+    } 
+    // writing the reads of the second end into file
+    for (l = 0; l < arrayMax (currGE->readsTranscript2); l++) {
+      char* currRead2 = hlr_strdup( textItem (currGE->readsTranscript2,l)); // read2
+      readSize2 = strlen( currRead2 );
+      if( readSize2 < minReadSize ) minReadSize = readSize2;
+      fprintf( freads2, ">%d\n%s\n", l, currRead2 );
+      hlr_free( currRead2 );
+    }
+    fclose( freads2 );      
+    
+    // collapse the reads 2  ## requires the FASTX package on the path
+    stringPrintf( cmd, "fastx_collapser -i %s_reads2.fa -o %s_reads2.collapsed.fa", currGE->id, currGE->id );
+    hlr_system (string (cmd),0);
+    
+    //blat of reads2 against the first transcript
+    stringPrintf( cmd, "blat -t=dna -out=psl -fine -tileSize=15 %s_transcript1.fa %s_reads2.collapsed.fa stdout", currGE->id, currGE->id );
+    
+    // reading the results of blast from Pipe
+    blatParser_initFromPipe( string(cmd) );
+    while( blQ = blatParser_nextQuery() ) {
+      int nucleotideOverlap = getNucleotideOverlap ( blQ );
+      if ( nucleotideOverlap > ( ((double)readSize2)* atof(confp_get(conf,"MAX_OVERLAP_ALLOWED"))) ) {
+	char* value = strchr(blQ->qName,'-');
+	homologousCount+=atoi(value+1);
       }
-      fclose( freads1 );
-      
-      stringPrintf( fa2, "%s_reads2.fa", currGE->id);
-      if (!(freads2 = fopen ( string(fa2) ,"w"))) {
-	die ("Unable to open file: %s",string (fa2));
-      } 
-      // writing the reads of the second end into file
-      for (l = 0; l < arrayMax (currGE->readsTranscript2); l++) {
-	char* currRead2 = hlr_strdup( textItem (currGE->readsTranscript2,l)); // read2
-	readSize2 = strlen( currRead2 );
-	fprintf( freads2, ">%d\n%s\n", l, currRead2 );
-	hlr_free( currRead2 );
+    }
+    blatParser_deInit();
+    
+    // collapse the reads 1 ## requires the FASTX package on the path
+    stringPrintf( cmd, "fastx_collapser -i %s_reads1.fa -o %s_reads1.collapsed.fa", currGE->id, currGE->id  );
+    hlr_system (string (cmd),0);
+    
+    //blat of reads1 against the second transcript
+    stringPrintf( cmd, "blat -t=dna -out=psl -fine -tileSize=15 %s_transcript2.fa %s_reads1.collapsed.fa stdout", currGE->id, currGE->id  );
+    
+    blatParser_initFromPipe( string(cmd) );
+    while( blQ = blatParser_nextQuery() ) {		
+      int nucleotideOverlap = getNucleotideOverlap ( blQ );
+      if ( nucleotideOverlap > ( ((double)readSize1)* atof(confp_get(conf,"MAX_OVERLAP_ALLOWED"))) ) {
+	char* value = strchr(blQ->qName,'-');
+	homologousCount+=atoi(value+1);
       }
-      fclose( freads2 );      
-      
-      // collapse the reads 2  ## requires the FASTX package on the path
-      stringPrintf( cmd, "fastx_collapser -i %s_reads2.fa -o %s_reads2.collapsed.fa", currGE->id, currGE->id );
-	hlr_system (string (cmd),0);
-
-      //blat of reads2 against the first transcript
-      stringPrintf( cmd, "blat -t=dna -out=psl -fine -tileSize=15 %s_transcript1.fa %s_reads2.collapsed.fa stdout", currGE->id, currGE->id );
-  
+    }
+    blatParser_deInit();
+    
+    if (((double)homologousCount / (double)arrayMax(currGE->readsTranscript1)) <= atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) { 
+      homologousCount = 0;
+      // there is no homology between the two genes, but what about the rest of the genome
+      stringPrintf(cmd, "gfClient localhost 9090 / -t=dna -q=dna -minScore=%d -out=psl %s_reads1.fa stdout" , minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id);
       // reading the results of blast from Pipe
       blatParser_initFromPipe( string(cmd) );
+      tooMany = 1;
+      int contReads=0;
       while( blQ = blatParser_nextQuery() ) {
-	int nucleotideOverlap = getNucleotideOverlap ( blQ );
-	if ( nucleotideOverlap > ( ((double)readSize2)* atof(confp_get(conf,"MAX_OVERLAP_ALLOWED"))) ) {
-	  char* value = strchr(blQ->qName,'-');
-	  homologousCount+=atoi(value+1);
-	}
+	tooMany = 0;
+	homologousCount+= arrayMax( blQ->entries ) - 1;
+	contReads++;
       }
       blatParser_deInit();
-
-      // collapse the reads 1 ## requires the FASTX package on the path
-      stringPrintf( cmd, "fastx_collapser -i %s_reads1.fa -o %s_reads1.collapsed.fa", currGE->id, currGE->id  );
-      hlr_system (string (cmd),0);
-
-      //blat of reads1 against the second transcript
-      stringPrintf( cmd, "blat -t=dna -out=psl -fine -tileSize=15 %s_transcript2.fa %s_reads1.collapsed.fa stdout", currGE->id, currGE->id  );
-
-      blatParser_initFromPipe( string(cmd) );
-      while( blQ = blatParser_nextQuery() ) {		
-	int nucleotideOverlap = getNucleotideOverlap ( blQ );
-	if ( nucleotideOverlap > ( ((double)readSize1)* atof(confp_get(conf,"MAX_OVERLAP_ALLOWED"))) ) {
-	  char* value = strchr(blQ->qName,'-');
-	  homologousCount+=atoi(value+1);
-	}
-      }
-      blatParser_deInit();
-
-      if (((double)homologousCount / (double)arrayMax(currGE->readsTranscript1)) <= atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) { 
-	// writing the gfrEntry
-	puts (gfr_writeGfrEntry (currGE));
-	count++;
-      } else {
+//warn( "num Reads %d :\t %d \t:%d", homologousCount,  arrayMax(currGE->readsTranscript1), arrayMax(currGE->readsTranscript2) );
+      if (  tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript1)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"))+0.5 ) ) {
 	countRemoved++;
+	stringPrintf (cmd,"rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", currGE->id,currGE->id,currGE->id);
+	hlr_system( string(cmd) , 0);      
+	continue;
       }
-      // removing temporary files
-      stringPrintf (cmd,"rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", currGE->id,currGE->id,currGE->id);
-      hlr_system( string(cmd) , 0);      
+      
+      homologousCount = 0; // read 2
+      stringPrintf(cmd, "gfClient localhost 9090 / -t=dna -q=dna -minScore=%d -out=psl %s_reads2.fa stdout" , minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id);
+      // reading the results of blast from Pipe
+      blatParser_initFromPipe( string(cmd) );
+      tooMany = 1;
+      contReads = 0;
+      while( blQ = blatParser_nextQuery() ) {
+	tooMany = 0;
+	homologousCount+= arrayMax( blQ->entries ) - 1;
+      }
+      blatParser_deInit();
+//warn( "num Reads %d :\t %d \t:%d", homologousCount,  arrayMax(currGE->readsTranscript1), arrayMax(currGE->readsTranscript2) );
+      if ( tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript2)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"))+0.5 ) ) {
+	countRemoved++;
+	stringPrintf (cmd,"rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", currGE->id,currGE->id,currGE->id);
+	hlr_system( string(cmd) , 0); 
+	continue;
+      }
+      // writing the gfrEntry, if everthing else didn't stop 
+      puts (gfr_writeGfrEntry (currGE));
+      count++;
+    } else {
+      countRemoved++;
     }
+    // removing temporary files
+    stringPrintf (cmd,"rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", currGE->id,currGE->id,currGE->id);
+    hlr_system( string(cmd) , 0);      
   }
+
   gfr_deInit ();
 
   stringDestroy (fnSequencesToAlign);
@@ -188,4 +267,5 @@ int main (int argc, char *argv[])
 
   return EXIT_SUCCESS;
 }
+
 
