@@ -756,12 +756,14 @@ int main (int argc, char *argv[])
   SuperIntra testSuperIntra; 
   int index;
 
-  char *exonCoordinates1,*exonCoordinates2;
+  char *exonCoordinates1,*exonCoordinates2; 
   int minNumberOfPairedEndReads;
 
-  if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL)
+  if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+    die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
-
+  }
+   
   if (argc != 3) {
     usage ("%s <prefix> <minNumberOfPairedEndReads>",argv[0]);
   }
