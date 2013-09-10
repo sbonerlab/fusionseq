@@ -8,15 +8,16 @@
 #include "gfr.h"
 
 /**
-  \file gfrLargeScaleHomologyFilter.c 
-  \brief Removal of mismapping artifacts.
-  \details Filter to remove artifacts between paralogous genes as defined by TreeFam.
-  \author Andrea Sboner (andrea.sboner.w [at] gmail.com).
-  \version 0.8
-  \date 2013.09.06						
-  \pre It requires 'knownToTreefam.txt' or similar file.
+   @file gfrRepeatMaskerFilter.c
+   @brief It removes potential fusion transcript candidates if the two genes are paralogs. It uses TreeFam to establish is two genes have similar sequences.
+   @details It removes potential fusion transcript candidates if the two genes are paralogs. It uses TreeFam to establish is two genes have similar sequences.
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre A valid GFR file as input, including stdin.
+   @pre knownToTreefam a tab delimited file that include the information about paralogs
  */
-
 static int sortKgTreeFamsByTranscriptName (KgTreeFam *a, KgTreeFam *b) 
 {
   return strcmp (a->transcriptName,b->transcriptName);
