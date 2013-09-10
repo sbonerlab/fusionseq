@@ -1,22 +1,24 @@
 #include <bios/log.h>
 #include <bios/format.h>
 #include <bios/intervalFind.h>
+#include <bios/confp.h>
 #include "gfr.h"
 
 /**
    @file gfrRepeatMaskerFilter.c
    @brief Filter to remove artifacts due to mis-alignment to repetitive regions.
-   @details It removes candidates with reads overlapping repetitive sequences. It looks at non-exonic reads and, if some overlap exists with repetitive regions, the reads are excluded. If the final number of reads is below the threshold (minNumberOfReads), the fusion candidate is removed.
+   @details It removes candidates with reads overlapping repetitive sequences. It looks at non-exonic reads and, if some overlap exists with repetitive regions, the reads are excluded and the number of inter-reads is updated accordingly. MAX_OVERLAP_ALLOWED will determine if an overlap triggers the removal of the read. If the remaining number of reads is below the threshold (minNumberOfReads), the fusion candidate is removed.
    
    @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
    @version 0.8
-   @date 2012.08.23
+   @date 2013.09.10
    @remarks WARNings will be output to stdout to summarize the filter results.
    @pre A valid GFR file as input, including stdin.
-   @pre repeatMasker.interval The repetitive regions in interval format; typically from RepeatMasker.
+   @pre repeatMasker.interval The repetitive regions in interval format; typically from RepeatMasker, defined in .fusionseqrc
    @pre [in] minNumberInterReads An integer representing the minimum number of reads to keep the fusion candidate.
  */
 
+static config *Conf = NULL; /**< Pointer to configuration file .fusionseqrc  */
 
 static float getNumInter( GfrInterRead* currInter, int readLength ) { // computes the correct number of the inters by considering split reads on splice junctions.
   float numInter=0.0;
@@ -32,21 +34,47 @@ static float getNumInter( GfrInterRead* currInter, int readLength ) { // compute
   return( numInter );
 }
 
+int getNucleotideOverlap( int start, int end, Interval* currInterval ) {
+  int k;
+  int overlap=0;
+  for( k=0; k<arrayMax( currInterval->subIntervals); k++ ) {
+    SubInterval* currSubInterval = arrp( currInterval->subIntervals, k, SubInterval);
+    overlap+=rangeIntersection( start, end, currSubInterval->start, currSubInterval->end);
+  }
+  return overlap;
+}
 
 int main (int argc, char *argv[]) {
 	GfrEntry *currGE;
 	int count,countRemoved;
-	int i;
+	int i, j;
 	Array intervals;
 	GfrInterRead *currGIR;
 	int totalOverlaps;
-	int minNumInterReads;
+	float minNumInterReads;
 	float numberOfInters;
-	if (argc != 3) {
-		usage ("%s <repeatMasker.interval> <minNumInterReads>",argv[0]);
+	Stringa buffer = stringCreate(100);
+
+	if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+	  die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH"));
+	  return EXIT_FAILURE;
 	}
-	intervalFind_addIntervalsToSearchSpace (argv[1],0);
-	minNumInterReads = atoi (argv[2]);
+	if( confp_get( Conf, "REPEATMASKER_DIR")==NULL ) {
+	  die("%s:\tCannot find REPEATMASKER_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+	  return EXIT_FAILURE;
+	}
+	if( confp_get( Conf, "REPEATMASKER_FILENAME")==NULL ) {
+	  die("%s:\tCannot find REPEATMASKER_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+	  return EXIT_FAILURE;
+	}
+
+	if (argc != 2) {
+	  usage ("%s <minNumInterReads>",argv[0]);
+	}
+	stringPrintf( buffer, "%s/%s", confp_get( Conf, "REPEATMASKER_DIR"), confp_get( Conf, "REPEATMASKER_FILENAME") );
+	intervalFind_addIntervalsToSearchSpace (string(buffer),0);
+	stringDestroy(buffer); 
+	minNumInterReads = atof (argv[1]);
 	count = 0;
 	countRemoved = 0;
 	gfr_init ("-");
@@ -61,18 +89,28 @@ int main (int argc, char *argv[]) {
 	    }
 	    totalOverlaps = 0;
 	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript1,currGIR->readStart1,currGIR->readEnd1);
-	    totalOverlaps += arrayMax (intervals);
-	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript2,currGIR->readStart2,currGIR->readEnd2);
-	    totalOverlaps += arrayMax (intervals);
-	    if (totalOverlaps > 0) {
-	      //currGE->numInter-= getNumInter( currGIR, readLength ); // currGE->numInter is an integer, numberOfInters is float!
-	      numberOfInters-= getNumInter( currGIR, readLength );
+	    for(j=0; j < arrayMax( intervals ); j++) {
+	      Interval* currInterval = arru( intervals, j, Interval*);
+	      totalOverlaps = getNucleotideOverlap ( currGIR->readStart1,currGIR->readEnd1, currInterval );
+	    }
+	    if ( totalOverlaps >  ( ((double)(readLength)) * strtod(confp_get(Conf, "MAX_OVERLAP_ALLOWED"), NULL) ) ) {
+	      currGE->numInter-= getNumInter( currGIR, readLength );
 	      currGIR->flag = 1;
+	      continue;
+	    }
+	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript2,currGIR->readStart2,currGIR->readEnd2);
+	     for(j=0; j < arrayMax( intervals ); j++) {
+	      Interval* currInterval = arru( intervals, j, Interval*);
+	      totalOverlaps = getNucleotideOverlap ( currGIR->readStart2,currGIR->readEnd2, currInterval );
+	    }
+	    if ( totalOverlaps >  ( ((double)(readLength)) * strtod(confp_get(Conf, "MAX_OVERLAP_ALLOWED"), NULL) ) ) {
+	      currGE->numInter-= getNumInter( currGIR, readLength );
+	      currGIR->flag = 1;
+	      continue;
 	    }
 	  }
 	  
-	  // if (currGE->numInter < minNumInterReads) // numberOfInters correctly determine the splice number numInter, w
-	  if( numberOfInters < minNumInterReads ) {
+	  if (currGE->numInter < (float)minNumInterReads) { 
 	    countRemoved++;
 	    continue;
 	  }
@@ -80,6 +118,7 @@ int main (int argc, char *argv[]) {
 	  count++;
 	}
 	gfr_deInit ();
+	warn ( "%s_interval: %s/%s", argv[0], confp_get( Conf, "REPEATMASKER_DIR"), confp_get( Conf, "REPEATMASKER_FILENAME") );
 	warn ("%s_numRemoved: %d",argv[0],countRemoved);
 	warn ("%s_numGfrEntries: %d",argv[0],count);
 	return 0;
