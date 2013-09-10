@@ -587,7 +587,7 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
     columnType = arru (columnTypes,i,int);
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_NUM_INTER) && columnType == GFR_COLUMN_TYPE_NUM_INTER) {
       gfr_addTab (buffer,&first);
-      stringAppendf (buffer,"%d",currEntry->numInter);
+      stringAppendf (buffer,"%f",currEntry->numInter);
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_INTER_MEAN_AB) && columnType == GFR_COLUMN_TYPE_INTER_MEAN_AB) {
       gfr_addTab (buffer,&first);
