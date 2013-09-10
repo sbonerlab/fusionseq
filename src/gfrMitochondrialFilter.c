@@ -3,8 +3,24 @@
 #include <bios/format.h>
 #include <bios/blatParser.h>
 #include <bios/linestream.h>
+#include <bios/confp.h>
+
 #include "gfr.h"
 
+/**
+   @file gfrMitochondrial.c
+   @brief Filter to remove candidates involving mitochondrial genes. Artifacts due to mis-alignment to the mitochondrial chromosome sequence are also eliminated.
+   @details It removes candidates involving mitochondrial genes and also those with reads overlapping mitochondrial sequences.The MAX_OVERLAP_ALLOWED  determines if a read is sufficiently similar and MAX_FRACTION_HOMOLOGOUS determines the max number of reads that could have some homology to the mitochndrial chromosome
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @remarks To speed up the computation, gfServer and gfClient (part of Blat suite) are used. If the server is not running, it will be initiated. The location of the tools must be defined in .fusionseqrc. Moreover, the mitochondrial reference is assigned to BLAT_GFSERVER_PORT + 2. 
+   @pre A valid GFR file as input, including stdin.
+ */
+
+static config *Conf = NULL; /**< Pointer to configuration file .fusionseqrc  */
 
 void writeFasta( GfrEntry* currGE, unsigned int *minReadSize ) {
   FILE *freads;
@@ -53,45 +69,60 @@ int main (int argc, char *argv[])
   int  i;
   Stringa cmd;
   BlatQuery *blQ=NULL;
-  config *conf;
   
-  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
-    die("%s:\tCannot find .fusionseqrc", argv[0]);
+  if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+    die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH"));
     return EXIT_FAILURE;
   }
-  if( confp_get( conf,"MAX_OVERLAP_ALLOWED")==NULL ) {
+  if( confp_get( Conf,"MAX_OVERLAP_ALLOWED")==NULL ) {
     die("%s:\tCannot find MAX_OVERLAP_ALLOWED in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
-  if( confp_get( conf,"MAX_FRACTION_HOMOLOGOUS")==NULL ) {
+  if( confp_get( Conf,"MAX_FRACTION_HOMOLOGOUS")==NULL ) {
     die("%s:\tCannot find MAX_FRACTION_HOMOLOGOUS in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
- if( confp_get( conf, "MITOCHONDRIAL_DIR")==NULL ) {
+ if( confp_get( Conf, "MITOCHONDRIAL_DIR")==NULL ) {
     die("%s:\tCannot find MITOCHONDRIAL_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
-  if( confp_get( conf, "MITOCHONDRIAL_FILENAME")==NULL ) {
+  if( confp_get( Conf, "MITOCHONDRIAL_FILENAME")==NULL ) {
     die("%s:\tCannot find MITOCHONDRIAL_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
-if( confp_get( conf, "TMP_DIR")==NULL ) {
+if( confp_get( Conf, "TMP_DIR")==NULL ) {
     die("%s:\tCannot find TMP_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
+ if( confp_get( Conf, "BLAT_GFSERVER")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+ if( confp_get( Conf, "BLAT_GFCLIENT")==NULL ) {
+    die("%s:\tCannot find BLAT_GFCLIENT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+if( confp_get( Conf, "BLAT_GFSERVER_HOST")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER_HOST in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }if( confp_get( Conf, "BLAT_GFSERVER_PORT")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER_PORT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+
   count = 0;
   countRemoved = 0;
   
   cmd = stringCreate (100);
   // initializing the gfServers
-  stringPrintf( cmd, "gfServer status localhost 8081 2> /dev/null" );
+  stringPrintf( cmd, "%s status %s %d 2> /dev/null", confp_get( Conf, "BLAT_GFSERVER"),  confp_get( Conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( Conf, "BLAT_GFSERVER_PORT")) + 2);
   LineStream ls = ls_createFromPipe( string(cmd) );
   if( ls_nextLine( ls ) == NULL  ) { // not initialized
     ls_destroy_func( ls );
-    stringPrintf( cmd , "gfServer -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_mitochondrial.log start localhost 8081 %s/%s  &", confp_get(conf, "TMP_DIR"), confp_get(conf, "MITOCHONDRIAL_DIR"), confp_get(conf,"MITOCHONDRIAL_FILENAME"));
+    stringPrintf( cmd , "%s -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_mitochondrial.log start %s %d %s/%s  &", confp_get(Conf, "BLAT_GFSERVER"), confp_get(Conf, "TMP_DIR"),  confp_get( Conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( Conf, "BLAT_GFSERVER_PORT")) + 2, confp_get(Conf, "MITOCHONDRIAL_DIR"), confp_get(Conf,"MITOCHONDRIAL_FILENAME"));
     hlr_system( string( cmd ), 0 );
     long int startTime = time(0);
-    stringPrintf( cmd , "gfServer status localhost 8081 2> /dev/null");
+    stringPrintf( cmd , "%s status %s %d 2> /dev/null", confp_get( Conf, "BLAT_GFSERVER"), confp_get( Conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( Conf, "BLAT_GFSERVER_PORT")) + 2);
     int initialized=0;
     while( !initialized && (time(0)-startTime)<600 ) {
       ls = ls_createFromPipe( string(cmd) );
@@ -99,7 +130,8 @@ if( confp_get( conf, "TMP_DIR")==NULL ) {
       ls_destroy_func( ls );
     }
     if( initialized==0 )  {
-      die("gfServer not initialized"); 
+      die("gfServer for %s/%s not initialized: %s %s %s", confp_get(Conf, "MITOCHONDRIAL_DIR"), confp_get(Conf, "MITOCHONDRIAL_FILENAME"), confp_get( Conf, "BLAT_GFSERVER"), confp_get( Conf, "BLAT_GFSERVER_HOST"), confp_get( Conf, "BLAT_GFSERVER_PORT")); 
+      return EXIT_FAILURE; 
       return EXIT_FAILURE;
     }
   } 
@@ -117,17 +149,17 @@ if( confp_get( conf, "TMP_DIR")==NULL ) {
       mitochondrialCount = 0;
       minReadSize=1000;
       writeFasta( currGE, &minReadSize );
-      stringPrintf(cmd, "gfClient localhost 8081 / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa stdout" , minReadSize - 10 > 20 ? minReadSize - 10 : 20 , currGE->id);
+      stringPrintf(cmd, "%s %s %d / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa stdout" , confp_get( Conf, "BLAT_GFCLIENT"), confp_get( Conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( Conf, "BLAT_GFSERVER_PORT")) + 2, minReadSize - 10 > 20 ? minReadSize - 10 : 20 , currGE->id);
       // reading the results of blast from Pipe
       blatParser_initFromPipe( string(cmd) );
       while( blQ = blatParser_nextQuery() ) {
 	int nucleotideOverlap = getNucleotideOverlap ( blQ );
-	if (nucleotideOverlap > (((double)minReadSize) * strtod(confp_get(conf, "MAX_OVERLAP_ALLOWED"), NULL))) {
+	if (nucleotideOverlap > (((double)minReadSize) * strtod(confp_get(Conf, "MAX_OVERLAP_ALLOWED"), NULL))) {
 	  mitochondrialCount++;
 	} 
       }
       blatParser_deInit();
-      if (( (double)mitochondrialCount / ( (double)currGE->numInter * 2.0 ) ) <= strtod(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"), NULL)) {       
+      if (( (double)mitochondrialCount / ( (double)currGE->numInter * 2.0 ) ) <= strtod(confp_get(Conf, "MAX_FRACTION_HOMOLOGOUS"), NULL)) {       
 	// writing the gfrEntry
 	puts (gfr_writeGfrEntry (currGE));
 	count++;
@@ -145,18 +177,7 @@ if( confp_get( conf, "TMP_DIR")==NULL ) {
   stringDestroy( cmd );
   warn ("%s_numRemoved: %d",argv[0],countRemoved);
   warn ("%s_numGfrEntries: %d",argv[0],count);
-  confp_close(conf);
+  confp_close(Conf);
   return 0;
 }
 
- /*
-
- // stopping the gfServer
-  //stringPrintf( cmd, "gfServer stop localhost %d", port);
-  //hlr_system( string(cmd), 0 );
-  //stringPrintf( cmd, "rm -rf gfServer_%d_mitochondrial.log", port);
-  //hlr_system( string(cmd), 0 );
-srand (  (unsigned int) getpid() ) ;
-  port = 8080 + (int) (1000.0 * (random() / (RAND_MAX + 1.0 ) ) );
-  stringPrintf( cmd , "gfServer -repMatch=100000 -tileSize=12 -canStop -log=gfServer_%d_mitochondrial.log start localhost %d %s/%s  &", port, port, "/home/asboner/FusionSeqData/human/hg19", "chrM.2bit");
-  hlr_system( string( cmd ), 1 );*/

@@ -14,6 +14,20 @@
 #include "gfr.h"
 #include "util.h"
 
+/**
+   @file gfrRibosomalFilter.c
+   @brief It removes candidates that have similarity with ribosomal genes. 
+   @details It removes candidates that have similarity with ribosomal genes. The rationale is that reads coming from highly expressed genes, such as ribosomal genes, are more likely to be mis-aligned and assigned to a different genes. MAX_OVERLAP_ALLOWED will determine if an overlap triggers the removal of the read. If the  number of homologous reads is above a user defined threshold (MAX_FRACTION_HOMOLOGOUS), the fusion candidate is removed.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @remarks To speed up the computation, gfServer and gfClient (part of Blat suite) are used. If the server is not running, it will be initiated. The location of the tools must be defined in .fusionseqrc. Moreover, the ribosomal reference is assigned to BLAT_GFSERVER_PORT + 1.
+   @pre A valid GFR file as input, including stdin.
+   @pre ribosomal.2bit A 2bit file with the sequnces of the ribosomal genes, defined in .fusionseqrc
+ */
+
 int main (int argc, char *argv[])
 {
   GfrEntry *currGE;
@@ -53,24 +67,40 @@ int main (int argc, char *argv[])
     die("%s:\tCannot find TMP_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
+ if( confp_get( conf, "BLAT_GFSERVER")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+ if( confp_get( conf, "BLAT_GFCLIENT")==NULL ) {
+    die("%s:\tCannot find BLAT_GFCLIENT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER_HOST in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }if( confp_get( conf, "BLAT_GFSERVER_PORT")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER_PORT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+
   cmd = stringCreate (100);
   // initializing the gfServers
-  stringPrintf( cmd, "gfServer status localhost 8080 2> /dev/null" );
+  stringPrintf( cmd, "%s status %s %d 2> /dev/null", confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1  );
   LineStream ls = ls_createFromPipe( string(cmd) );
   if( ls_nextLine( ls ) == NULL  ) { // not initialized
     ls_destroy_func( ls );
-    stringPrintf( cmd , "gfServer -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_ribosomal.log start localhost 8080 %s/%s &", confp_get(conf, "TMP_DIR"), confp_get(conf, "RIBOSOMAL_DIR"), confp_get(conf, "RIBOSOMAL_FILENAME"));
+    stringPrintf( cmd , "%s -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_ribosomal.log start %s %d %s/%s &",  confp_get( conf, "BLAT_GFSERVER"), confp_get(conf, "TMP_DIR"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1, confp_get(conf, "RIBOSOMAL_DIR"), confp_get(conf, "RIBOSOMAL_FILENAME"));
     hlr_system( string( cmd ), 0 );
     
     long int startTime = time(0);
-    stringPrintf( cmd , "gfServer status localhost 8080 2> /dev/null");
+    stringPrintf( cmd , "%s status %s %d 2> /dev/null", confp_get( conf, "BLAT_GFSERVER"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1);
     static unsigned short int initialized=0;
     while( !initialized && (time(0)-startTime)<600 ) {
       ls = ls_createFromPipe( string(cmd) );
       if( ls_nextLine( ls ) != NULL ) initialized=1; 
       ls_destroy_func( ls );
     }
-    if( initialized==0 )  die("gfServer not initialized");
+    if( initialized==0 )  die("gfServer not initialized: %s %s %d", confp_get( conf, "BLAT_GFSERVER"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1);
   } 
   gfr_init ("-");
   gfrEntries = arrayCreate( 100, GfrEntry );
@@ -126,19 +156,9 @@ int main (int argc, char *argv[])
     fclose( freads ); 
     freads=NULL;
     stringDestroy( readsFA );
-    /*
-    //blat of reads against the ribosomal genes
-    // 2*stepSize + tileSize - 1 = min_num_nt_to_trigger_alignment
-    // tileSize = 15
-    // int stepSize = (int)((readSize1 * confp_get(conf, "MAX_OVERLAP_ALLOWED") + 1 + 11) * 0.5);
-    stringPrintf(cmd, "blat -t=dna -q=dna -out=psl -fine -repMatch=1000000 -tileSize=15 %s/%s %s_reads.fa stdout", 
-    confp_get(conf, "RIBOSOMAL_DIR"), 
-    confp_get(conf, "RIBOSOMAL_FILENAME"), 
-    currGE->id);
+ 
     
-    */
-    
-    stringPrintf(cmd, "gfClient localhost 8080 / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa stdout" , minReadSize - 10 > 20 ? minReadSize - 10 : 20 , currGE->id);
+    stringPrintf(cmd, "%s %s %d / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa stdout" , confp_get( conf, "BLAT_GFCLIENT"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1 , minReadSize - 10 > 20 ? minReadSize - 10 : 20 , currGE->id);
     // reading the results of blast from Pipe
     blatParser_initFromPipe( string(cmd) );
     while( blQ = blatParser_nextQuery() ) {

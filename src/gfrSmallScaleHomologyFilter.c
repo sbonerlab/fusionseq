@@ -15,6 +15,20 @@
 #include "gfr.h"
 #include "util.h"
 
+
+/**
+   @file gfrSmallScaleHomologyFilter.c 
+   @brief  It removes mismapping artifacts.
+   @details It removes candidates with not supported by uniquely mapped reads. It reads can be mapped to other regions in the genome, the candidate is removed. MAX_OVERLAP_ALLOWED will determine if homologous regions are found. If the  number of homologous reads is above a user defined threshold (MAX_FRACTION_HOMOLOGOUS), the fusion candidate is removed.
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @remarks To speed up the computation, gfServer and gfClient (part of Blat suite) are used. If the server is not running, it will be initiated. The location of the tools must be defined in .fusionseqrc. Moreover, the human genome reference is assigned to  BLAT_GFSERVER_PORT. Note that gfrRibosomal filter uses gfServer on BLAT_GFSERVER_PORT + 1.
+   @pre It requires 'blat' and 'fastx_collapser' to be used, defined in .fusionseqrc
+   @pre A valid GFR file as input, including stdin.
+   @pre humanReference.2bit A 2bit file with the sequences of the human genome, defined in .fusionseqrc
+ */
 /**
   \file gfrSmallScaleHomologyFilter.c 
   \brief Removal of mismapping artifacts.
@@ -84,17 +98,35 @@ int main (int argc, char *argv[])
     die("%s:\tCannot find BLAT_DATA_DIR in the configuration file: %sc", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   } 
-
+ if( confp_get( conf, "TMP_DIR")==NULL ) {
+    die("%s:\tCannot find TMP_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+  if( confp_get( conf, "BLAT_GFSERVER")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+ if( confp_get( conf, "BLAT_GFCLIENT")==NULL ) {
+    die("%s:\tCannot find BLAT_GFCLIENT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER_HOST in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }if( confp_get( conf, "BLAT_GFSERVER_PORT")==NULL ) {
+    die("%s:\tCannot find BLAT_GFSERVER_PORT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
   cmd = stringCreate (100);
   // initializing the gfServers
-  stringPrintf( cmd, "gfServer status localhost 9090 2> /dev/null" );
+  stringPrintf( cmd, "%s status %s %s 2> /dev/null", confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT") );
   LineStream ls = ls_createFromPipe( string(cmd) );
   if( ls_nextLine( ls ) == NULL  ) { // not initialized
     ls_destroy_func( ls );
-    stringPrintf( cmd , "gfServer -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_genome.log start localhost 9090 %s/%s  &", confp_get(conf, "TMP_DIR"), confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"));
+    stringPrintf( cmd , "%s -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_genome.log start %s %s %s/%s  &", confp_get( conf, "BLAT_GFSERVER"), confp_get(conf, "TMP_DIR"),confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT"), confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"));
     hlr_system( string( cmd ), 0 );
     long int startTime = time(0);
-    stringPrintf( cmd , "gfServer status localhost 9090 2> /dev/null");
+    stringPrintf( cmd , "%s status %s %s 2> /dev/null", confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT"));
     int initialized=0;
     while( !initialized && (time(0)-startTime)<600 ) {
       ls = ls_createFromPipe( string(cmd) );
@@ -102,7 +134,7 @@ int main (int argc, char *argv[])
       ls_destroy_func( ls );
     }
     if( initialized==0 )  {
-      die("gfServer for %s/%s not initialized", confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME")); 
+      die("gfServer for %s/%s not initialized: %s %s %s", confp_get(conf, "BLAT_DATA_DIR"), confp_get(conf, "BLAT_TWO_BIT_DATA_FILENAME"), confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT")); 
       return EXIT_FAILURE;
     }
   } 
@@ -127,7 +159,7 @@ int main (int argc, char *argv[])
   for (i = 0; i < arrayMax (gfrEntries); i++) {
     currGE = arrp (gfrEntries,i,GfrEntry);
     homologousCount = 0;
-    minReadSize=1000;
+    minReadSize=10000;
     //if (((double)homologousCount / arrayMax(currGE->readsTranscript1)) <= atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) { 
     // creating two fasta files with the two genes
     //warn("%d %s", i, currGE->id);
@@ -169,12 +201,12 @@ int main (int argc, char *argv[])
     }
     fclose( freads2 );      
     
-    // collapse the reads 2  ## requires the FASTX package on the path
-    stringPrintf( cmd, "fastx_collapser -i %s_reads2.fa -o %s_reads2.collapsed.fa", currGE->id, currGE->id );
+    // collapse the reads 2  ## requires the FASTX package
+    stringPrintf( cmd, "%s -i %s_reads2.fa -o %s_reads2.collapsed.fa", confp_get(conf, "FASTX_COLLAPSER"), currGE->id, currGE->id );
     hlr_system (string (cmd),0);
     
     //blat of reads2 against the first transcript
-    stringPrintf( cmd, "blat -t=dna -out=psl -fine -tileSize=15 %s_transcript1.fa %s_reads2.collapsed.fa stdout", currGE->id, currGE->id );
+    stringPrintf( cmd, "%s -t=dna -out=psl -fine -tileSize=15 %s_transcript1.fa %s_reads2.collapsed.fa stdout",confp_get(conf, "BLAT_BLAT"), currGE->id, currGE->id );
     
     // reading the results of blast from Pipe
     blatParser_initFromPipe( string(cmd) );
@@ -188,11 +220,11 @@ int main (int argc, char *argv[])
     blatParser_deInit();
     
     // collapse the reads 1 ## requires the FASTX package on the path
-    stringPrintf( cmd, "fastx_collapser -i %s_reads1.fa -o %s_reads1.collapsed.fa", currGE->id, currGE->id  );
+    stringPrintf( cmd, "%s -i %s_reads1.fa -o %s_reads1.collapsed.fa", confp_get(conf, "FASTX_COLLAPSER"), currGE->id, currGE->id  );
     hlr_system (string (cmd),0);
     
     //blat of reads1 against the second transcript
-    stringPrintf( cmd, "blat -t=dna -out=psl -fine -tileSize=15 %s_transcript2.fa %s_reads1.collapsed.fa stdout", currGE->id, currGE->id  );
+    stringPrintf( cmd, "%s -t=dna -out=psl -fine -tileSize=15 %s_transcript2.fa %s_reads1.collapsed.fa stdout",confp_get(conf, "BLAT_BLAT"), currGE->id, currGE->id  );
     
     blatParser_initFromPipe( string(cmd) );
     while( blQ = blatParser_nextQuery() ) {		
@@ -207,7 +239,7 @@ int main (int argc, char *argv[])
     if (((double)homologousCount / (double)arrayMax(currGE->readsTranscript1)) <= atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) { 
       homologousCount = 0;
       // there is no homology between the two genes, but what about the rest of the genome
-      stringPrintf(cmd, "gfClient localhost 9090 / -t=dna -q=dna -minScore=%d -out=psl %s_reads1.fa stdout" , minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id);
+      stringPrintf(cmd, "%s %s %s / -t=dna -q=dna -minScore=%d -out=psl %s_reads1.fa stdout", confp_get( conf, "BLAT_GFCLIENT"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT"), minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id);
       // reading the results of blast from Pipe
       blatParser_initFromPipe( string(cmd) );
       tooMany = 1;
@@ -218,8 +250,7 @@ int main (int argc, char *argv[])
 	contReads++;
       }
       blatParser_deInit();
-//warn( "num Reads %d :\t %d \t:%d", homologousCount,  arrayMax(currGE->readsTranscript1), arrayMax(currGE->readsTranscript2) );
-      if (  tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript1)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"))+0.5 ) ) {
+      if (  tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript1)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) ) {
 	countRemoved++;
 	stringPrintf (cmd,"rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", currGE->id,currGE->id,currGE->id);
 	hlr_system( string(cmd) , 0);      
@@ -227,7 +258,7 @@ int main (int argc, char *argv[])
       }
       
       homologousCount = 0; // read 2
-      stringPrintf(cmd, "gfClient localhost 9090 / -t=dna -q=dna -minScore=%d -out=psl %s_reads2.fa stdout" , minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id);
+      stringPrintf(cmd, "%s %s %s / -t=dna -q=dna -minScore=%d -out=psl %s_reads2.fa stdout" , confp_get( conf, "BLAT_GFCLIENT"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT"), minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id);
       // reading the results of blast from Pipe
       blatParser_initFromPipe( string(cmd) );
       tooMany = 1;
@@ -237,8 +268,7 @@ int main (int argc, char *argv[])
 	homologousCount+= arrayMax( blQ->entries ) - 1;
       }
       blatParser_deInit();
-//warn( "num Reads %d :\t %d \t:%d", homologousCount,  arrayMax(currGE->readsTranscript1), arrayMax(currGE->readsTranscript2) );
-      if ( tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript2)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"))+0.5 ) ) {
+      if ( tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript2)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) ) {
 	countRemoved++;
 	stringPrintf (cmd,"rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", currGE->id,currGE->id,currGE->id);
 	hlr_system( string(cmd) , 0); 
