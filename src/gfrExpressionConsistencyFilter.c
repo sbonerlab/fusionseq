@@ -7,6 +7,19 @@
 
 #include "gfr.h"
 
+/**
+   @file gfrExpressionConsistencyFilter.c
+   @brief Adding information regarding the inter-transcripts reads.
+   @details It removes candidates that have a higher number of chimeric PE reads than PE reads aligned to the corresponding individual genes. This filter would only consider cases where the chimeric reads are mapped to introns of the two genes.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre A valid GFR file as input, including stdin.
+ */
+
+
 double getNonExonicSPER( GfrEntry* currGE ) {
   int i;
   //int minArea1, minArea2, maxArea1, maxArea2;

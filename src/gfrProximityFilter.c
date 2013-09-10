@@ -3,6 +3,19 @@
 
 #include "gfr.h"
 
+/**
+   @file gfrProximityFilter.c
+   @brief It removes 'cis' candidates that are likely due to mis-annotation of the 5' or 3' ends of the genes.
+   @details It removes 'cis' candidates that are likely due to mis-annotation of the 5' or 3' ends of the genes.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre [in] offset the minimum distance (in nucleotides) between the two genes to keep the candidate
+   @pre A valid GFR file as input, including stdin.
+ */
+
 int main (int argc, char *argv[])
 {
 	GfrEntry *currGE;

@@ -3,8 +3,23 @@
 #include <bios/log.h>
 #include <bios/format.h>
 #include <bios/linestream.h>
+#include <bios/confp.h>
 
 #include "gfr.h"
+
+/**
+   @file gfrBlackListFilter.c
+   @brief It removes candidates specified by the user in a file
+   @details It removes candidates specified by the user in a file.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre A valid GFR file as input, including stdin.
+   @pre blacklist a tab delimited file with the two gene symbols to removed; defined in .fusionseqrc 
+ */
+
 
 typedef struct {
   char* gene1;
@@ -31,13 +46,26 @@ int main (int argc, char *argv[])
   int index;
   WordIter w;
   Array blackList = arrayCreate(20, BLEntry);
+  config *Conf;
 
-  if (argc != 2) {
-    usage ("%s <blackList.txt>",argv[0]);
-  }  
-  fp = fopen( argv[1], "r" );
+  if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+    die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH"));
+    return EXIT_FAILURE;
+  }
+  if( confp_get( Conf, "ANNOTATION_DIR")==NULL ) {
+    die("%s:\tCannot find ANNOTATION_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+  if( confp_get( Conf, "BLACKLIST_FILENAME")==NULL ) {
+    die("%s:\tCannot find BLACKLIST_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+    return EXIT_FAILURE;
+  }
+  Stringa buffer=stringCreate( 100 );
+  stringPrintf( buffer, "%s/%s", confp_get( Conf, "ANNOTATION_DIR"), confp_get( Conf, "BLACKLIST_FILENAME") );
+  fp = fopen( string( buffer ), "r" );
+  stringDestroy( buffer );
   
-  if( !fp )  die("Unable to open file: %s", argv[1]);
+  if( !fp )  die("Unable to open file: %s", confp_get( Conf, "BLACKLIST_FILENAME"));
   // reading blacklist file
   LineStream ls = ls_createFromFile( argv[1] );
   while( line = ls_nextLine(ls) ) {
@@ -86,9 +114,10 @@ int main (int argc, char *argv[])
   }	           
   gfr_deInit ();
   arrayDestroy( blackList );
-  warn ("%s_BlackListFilter: %s",argv[0], argv[1]);
+  warn ("%s_BlackListFilter: %s",argv[0], confp_get( Conf, "BLACKLIST_FILENAME"));
   warn ("%s_numRemoved: %d",argv[0],countRemoved);
   warn ("%s_numGfrEntries: %d",argv[0],count);
+  confp_close( Conf);
   return 0;
 }
 

@@ -2,7 +2,17 @@
 #include <bios/format.h>
 #include "gfr.h"
 
-
+/**
+   @file gfrAbnormalInsertSizeFilter.c
+   @brief It removes candidates with an insert-size bigger than the normal insert-size.
+   @details It removes candidates with an insert-size bigger than the normal insert-size. The fusion candidate insert-size is computed on the minimal fusion transcript fragment.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre A valid GFR file as input, including stdin.
+ */
 
 int main (int argc, char *argv[])
 {

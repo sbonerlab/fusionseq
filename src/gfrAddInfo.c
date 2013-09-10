@@ -7,7 +7,18 @@
 #include "util.h"
 #include "gfr.h"
 
-
+/**
+   @file gfrAddInfo.c
+   @brief It includes additional information about the fusion transcript candidates such as gene symbols and gene description. 
+   @details It includes additional information about the fusion transcript candidates such as gene symbols and gene description. This is a pre-requisite for gfrBlackListFilter and gfrAnnotationConsistencyFilter.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre An external file that includes all descriptive information about the annotation set. The format of this file should follow kgXref.txt (from UCSC). Indeed, we use kgXref.txt for human, however, this could be modified by the user.
+   @pre A valid GFR file as input, including stdin.
+ */
 
 int main (int argc, char *argv[])
 {
@@ -16,15 +27,25 @@ int main (int argc, char *argv[])
 	Stringa buffer;
 	int count;
 
-	config *conf;
-
-	if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL)
-		return EXIT_FAILURE;
+	config *Conf;
+	
+	if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+	  die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH"));
+	  return EXIT_FAILURE;
+	}
+	if( confp_get( Conf, "ANNOTATION_DIR")==NULL ) {
+	  die("%s:\tCannot find ANNOTATION_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+	  return EXIT_FAILURE;
+	}
+	if( confp_get( Conf, "KNOWN_GENE_XREF_FILENAME")==NULL ) {
+	  die("%s:\tCannot find KNOWN_GENE_XREF_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+	  return EXIT_FAILURE;
+	}
 
 	buffer = stringCreate (100);
 	stringPrintf (buffer,"%s/%s",
-		      confp_get(conf, "ANNOTATION_DIR"),
-		      confp_get(conf, "KNOWN_GENE_XREF_FILENAME"));
+		      confp_get(Conf, "ANNOTATION_DIR"),
+		      confp_get(Conf, "KNOWN_GENE_XREF_FILENAME"));
 
 	kgXrefs = util_readKnownGeneXrefs (string (buffer));
 	arraySort (kgXrefs,(ARRAYORDERF)sortKgXrefsByTranscriptName);
@@ -46,7 +67,7 @@ int main (int argc, char *argv[])
 	}
 	gfr_deInit ();
 	warn ("%s_numGfrEntries: %d",argv[0],count);
-	confp_close(conf);
+	confp_close(Conf);
 
 	return EXIT_SUCCESS;
 }

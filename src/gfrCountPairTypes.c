@@ -3,6 +3,17 @@
 
 #include "gfr.h"
 
+/**
+   @file gfrCountPairTypes.c
+   @brief Adding information regarding the inter-transcripts reads.
+   @details It counts the number of inter-transcripts reads for each type of connection, i.e. exon-exon, exon-intron, etc.
+   
+   @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
+   @version 0.8
+   @date 2013.09.10
+   @remarks WARNings will be output to stdout to summarize the filter results.
+   @pre A valid GFR file as input, including stdin.
+ */
 
 
 static int sortGfrInterReads (GfrInterRead *a, GfrInterRead *b)
