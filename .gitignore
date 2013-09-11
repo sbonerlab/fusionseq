@@ -17,6 +17,11 @@ include/
 .libs/
 *.la
 
+# doxygen #
+###################
+doc/
+html/
+*.in
 
 # automake #
 ###################
