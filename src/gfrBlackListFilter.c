@@ -62,12 +62,12 @@ int main (int argc, char *argv[])
   }
   Stringa buffer=stringCreate( 100 );
   stringPrintf( buffer, "%s/%s", confp_get( Conf, "ANNOTATION_DIR"), confp_get( Conf, "BLACKLIST_FILENAME") );
-  fp = fopen( string( buffer ), "r" );
+  /*  fp = fopen( string( buffer ), "r" );
+  if( !fp )  die("Unable to open file: %s", string(buffer));
   stringDestroy( buffer );
-  
-  if( !fp )  die("Unable to open file: %s", confp_get( Conf, "BLACKLIST_FILENAME"));
-  // reading blacklist file
-  LineStream ls = ls_createFromFile( argv[1] );
+  */ 
+// reading blacklist file
+  LineStream ls = ls_createFromFile( string(buffer) );
   while( line = ls_nextLine(ls) ) {
     w = wordIterCreate( line, "\t", 1);
     currBLE = arrayp( blackList, arrayMax(blackList), BLEntry);
@@ -75,7 +75,9 @@ int main (int argc, char *argv[])
     currBLE->gene2 = hlr_strdup ( wordNext(w) );    
     wordIterDestroy(w);
   }
-  fclose(fp);
+  //fclose(fp);
+  ls_destroy( ls );
+  stringDestroy( buffer );
   arraySort( blackList, (ARRAYORDERF) sortBlackListByName1);
 
   // beginFiltering
@@ -84,6 +86,11 @@ int main (int argc, char *argv[])
   gfr_init ("-");
   puts (gfr_writeHeader ());
   while (currGE = gfr_nextEntry ()) { // reading the gfr
+    if( currGE->geneSymbolTranscript1 == NULL ) {
+      die("Gene symbols are not present in the GFR file. Please run gfrAddInfo before gfrBlackListFilter.");
+      return EXIT_FAILURE;
+    }
+	
     // creating a new query to the black list
     currQuery.gene1 = currGE->geneSymbolTranscript1;
     currQuery.gene2 = currGE->geneSymbolTranscript2;
