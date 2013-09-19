@@ -117,58 +117,36 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
   puts (gfr_writeHeader ());
   j = 0;
   for (i = 0; i < arrayMax (gfrEntries); i++) {
+    minReadSize = 100000;
     currGE = arrp (gfrEntries,i,GfrEntry);
     ribosomalCount = 0;
     
-    // creating one fasta files with the reads
-    Stringa readsFA = stringCreate( 100 ); 
-    
-    // creating the fasta files with the reads 
-    stringPrintf( readsFA, "%s_reads.fa", currGE->id);
-    freads = fopen ( string(readsFA) ,"w");
-    if (freads == NULL) {
-      die ("Unable to open file: %s",string (readsFA));
-    }     
     if (arrayMax(currGE->readsTranscript1) != arrayMax(currGE->readsTranscript2))
       die("Error: different number of inter-transcript reads %d vs. %d", 
           arrayMax(currGE->readsTranscript1),
 	  arrayMax( currGE->readsTranscript2));
+    writeFasta( currGE, &minReadSize, confp_get(conf, "TMP_DIR") );
     
-    // writing the reads into file
-    for (l = 0; l < arrayMax (currGE->readsTranscript1); l++) {      
-      char* currRead1 = hlr_strdup( textItem (currGE->readsTranscript1,l)); // read1
-      char* currRead2 = hlr_strdup( textItem (currGE->readsTranscript2,l)); // read2
-      fprintf( freads, ">%d/1\n%s\n>%d/2\n%s\n", l+1, currRead1, l+1, currRead2 );
-      readSize1 = strlen( currRead1 );
-      readSize2 = strlen( currRead2 );
-      
-      if(readSize1 != readSize2 )
-        die("The two reads have different lengths: 1:%d vs 2:%d", readSize1, readSize2);
-      if( i == 0 )
-	minReadSize = readSize1 ;
-      else {
-	if ( readSize1 < minReadSize )
-	  minReadSize = readSize1 ;
-      }
-      hlr_free( currRead1 );
-      hlr_free( currRead2 );
-    }
-    fclose( freads ); 
-    freads=NULL;
-    stringDestroy( readsFA );
- 
-    
-    stringPrintf(cmd, "%s %s %d / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa stdout" , confp_get( conf, "BLAT_GFCLIENT"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1 , minReadSize - 10 > 20 ? minReadSize - 10 : 20 , currGE->id);
-    // reading the results of blast from Pipe
-    blatParser_initFromPipe( string(cmd) );
+    stringPrintf(cmd, "cd %s;%s %s %d / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa %s.ribo.psl  &>/dev/null" , confp_get(conf, "TMP_DIR"), confp_get( conf, "BLAT_GFCLIENT"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1 , minReadSize - 5 > 20 ? minReadSize - 5 : 20 ,  currGE->id, currGE->id);
+    hlr_system( string(cmd), 0 );
+
+    // reading the results of blast from File
+    stringPrintf(cmd,  "%s/%s.ribo.psl", confp_get( conf, "TMP_DIR"), currGE->id);
+    blatParser_initFromFile( string(cmd) );
     while( blQ = blatParser_nextQuery() ) {
       int nucleotideOverlap = getNucleotideOverlap ( blQ );
       if (nucleotideOverlap > (((double)readSize1) * strtod(confp_get(conf, "MAX_OVERLAP_ALLOWED"), NULL))) {
+	char* value = strchr( blQ->qName,'/' );
+	if( value ) *value = '\0'; else die("Not a valid index in the blat query name:\t%s", blQ->qName );
+	int indexOfInter = atoi( blQ->qName ); // the following three lines should removed the read if writing the GFR entry
+	GfrInterRead *currGIR = arrp( currGE->interReads, indexOfInter, GfrInterRead );
+	currGIR->flag = 1;
 	ribosomalCount++;
       } 
     }
     blatParser_deInit();
-    if (( (double)ribosomalCount / ( (double)currGE->numInter * 2.0 ) ) <= strtod(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"), NULL)) {       
+    if ( ( (double) ribosomalCount / (double) (arrayMax(currGE->readsTranscript1) + arrayMax(currGE->readsTranscript2) ) ) <= strtod(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS"), NULL) ) {
+      if( ribosomalCount > 0 ) updateStats( currGE );       
       // writing the gfrEntry
       puts (gfr_writeGfrEntry (currGE));
       count++;
@@ -176,8 +154,8 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
       countRemoved++;
     }
     // removing temporary files
-    stringPrintf (cmd,"rm -rf %s_reads.fa", currGE->id );
-    hlr_system( string(cmd) , 0);      
+    stringPrintf (cmd,"rm -rf %s/%s_reads.fa %/%s.ribo.psl", confp_get(conf, "TMP_DIR"), currGE->id, confp_get(conf, "TMP_DIR"), currGE->id );
+    hlr_system( string(cmd) , 1);      
   }
   
   gfr_deInit ();
