@@ -577,6 +577,7 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
   int first;
   int i,j;
   int columnType;
+  int firstEntry;
   GfrPairCount *currGPC;
   GfrInterRead *currGIR;
   GfrExonCoordinate *currEC;
@@ -587,7 +588,7 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
     columnType = arru (columnTypes,i,int);
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_NUM_INTER) && columnType == GFR_COLUMN_TYPE_NUM_INTER) {
       gfr_addTab (buffer,&first);
-      stringAppendf (buffer,"%f",currEntry->numInter);
+      stringAppendf (buffer,"%.2f",currEntry->numInter);
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_INTER_MEAN_AB) && columnType == GFR_COLUMN_TYPE_INTER_MEAN_AB) {
       gfr_addTab (buffer,&first);
@@ -607,11 +608,11 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_NUM_INTRA1) && columnType == GFR_COLUMN_TYPE_NUM_INTRA1) {
       gfr_addTab (buffer,&first);
-      stringAppendf (buffer,"%d",currEntry->numIntra1);
+      stringAppendf (buffer,"%.2f",currEntry->numIntra1);
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_NUM_INTRA2) && columnType == GFR_COLUMN_TYPE_NUM_INTRA2) {
       gfr_addTab (buffer,&first);
-      stringAppendf (buffer,"%d",currEntry->numIntra2);
+      stringAppendf (buffer,"%.2f",currEntry->numIntra2);
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_FUSION_TYPE) && columnType == GFR_COLUMN_TYPE_FUSION_TYPE) {
       gfr_addTab (buffer,&first);
@@ -705,14 +706,16 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_INTER_READS) && columnType == GFR_COLUMN_TYPE_INTER_READS) {
       gfr_addTab (buffer,&first);
+      firstEntry=1;
       for (j = 0; j < arrayMax (currEntry->interReads); j++) {
         currGIR = arrp (currEntry->interReads,j,GfrInterRead); 
         if (currGIR->flag == 0) {
-          stringAppendf (buffer,"%d,%d,%d,%d,%d,%d,%d%s",
+          stringAppendf (buffer,"%s%d,%d,%d,%d,%d,%d,%d",
+			 firstEntry ? "" : "|",
                          currGIR->pairType,currGIR->number1,currGIR->number2,
                          currGIR->readStart1,currGIR->readEnd1,
-                         currGIR->readStart2,currGIR->readEnd2, 
-                         j < arrayMax (currEntry->interReads) - 1 ? "|" : "");
+                         currGIR->readStart2,currGIR->readEnd2); 
+	  if( firstEntry ) firstEntry=0;
         }
       }
     }
@@ -722,16 +725,28 @@ char* gfr_writeGfrEntry (GfrEntry *currEntry)
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_READS_TRANSCRIPT1) && columnType == GFR_COLUMN_TYPE_READS_TRANSCRIPT1) {
       gfr_addTab (buffer,&first);
+      firstEntry=1;
       for (j = 0; j < arrayMax (currEntry->readsTranscript1); j++) {
-        stringAppendf (buffer,"%s%s",textItem (currEntry->readsTranscript1,j),
-                       j < arrayMax (currEntry->readsTranscript1) - 1 ? "|" : "");
+	currGIR = arrp (currEntry->interReads,j,GfrInterRead); 
+        if (currGIR->flag == 0) {
+	  stringAppendf (buffer,"%s%s",
+			 firstEntry ? "" : "|",
+			 textItem (currEntry->readsTranscript1,j) );
+	    if( firstEntry ) firstEntry=0;
+	}
       }
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_READS_TRANSCRIPT2) && columnType == GFR_COLUMN_TYPE_READS_TRANSCRIPT2) {
       gfr_addTab (buffer,&first);
+      firstEntry=1;
       for (j = 0; j < arrayMax (currEntry->readsTranscript2); j++) {
-        stringAppendf (buffer,"%s%s",textItem (currEntry->readsTranscript2,j),
-                       j < arrayMax (currEntry->readsTranscript2) - 1 ? "|" : "");
+        currGIR = arrp (currEntry->interReads,j,GfrInterRead); 
+        if (currGIR->flag == 0) {
+	  stringAppendf (buffer,"%s%s",
+			 firstEntry ? "" : "|",
+			 textItem (currEntry->readsTranscript2,j) );
+	    if( firstEntry ) firstEntry=0;
+	}
       }
     }
     if (bitReadOne (presentColumnTypes,GFR_COLUMN_TYPE_SPER) && columnType == GFR_COLUMN_TYPE_SPER) {

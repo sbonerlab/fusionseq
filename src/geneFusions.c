@@ -32,7 +32,7 @@
 #define SAMPLING_ITERATIONS 100000
 
 
-static config *Conf = NULL; /**< Pointer to configuration file .fusionseqrc  */
+static config *conf = NULL; /**< Pointer to configuration file .fusionseqrc  */
 static Array countPairs = NULL; /**< Array to determine the number of reads per each transcript connection.  */
 
 /**
@@ -44,6 +44,7 @@ typedef struct {
   int readStart2;/**< Start position of the second end */
   int readEnd1;/**< End position of the first end */
   int readEnd2;/**< End position of the second end */
+  float addNumIntra; /**< adding number of intra-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is spliced; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
 } Intra;
 
 
@@ -62,6 +63,7 @@ typedef struct {
   int pairType;/**< Type of connection, i.e. exon-exon, exon-intron, exon-boundary (and viceversa) */
   int number1;/**< location of first end in transcript virtual-exon coordinates */
   int number2;/**< location of the second end in transcript virtual-exon coordinates */
+  float addNumInter; /**< adding number of inter-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is spliced; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
 } Inter;
 
     
@@ -70,8 +72,8 @@ typedef struct {
 */
 typedef struct {
   Interval *transcript; /**< pointer to the transcript */
-  Array intras; /**< Array of all the intra-transcripts reads. @remark Type is Intra (changed from previous versoin)*/ 
-  float numIntras; /**< number of intra-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
+  Array intras; /**< Array of all the intra-transcripts reads. @remark Type is Intra (changed from previous version)*/ 
+  //float numIntras; /**< number of intra-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately */
 } SuperIntra;
 
 
@@ -95,33 +97,79 @@ typedef struct {
   int transcript; /**< transcriptomic location */
 } Coordinate; 
 
+/**
+   It computes the 'adding number' of intra-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately. 
+*/
+
+float getAddingNumberIntra( Intra* currIntra, char* read1, char* read2) {
+  float addIntra=0.0;
+  if( read1==NULL | read2==NULL | 
+	(currIntra->readEnd1 - currIntra->readStart1 + 1) == 0 | 
+	(currIntra->readEnd2 - currIntra->readStart2 + 1) == 0 ) 
+      die("Something is wrong with the intra pairs: read1[%s](e%d-s%d +1 )=%d read2[%s](e%d-s%d + 1 )=%d", 
+	  read1, currIntra->readEnd1, currIntra->readStart1, (currIntra->readEnd1 - currIntra->readStart1 + 1),
+	  read2, currIntra->readEnd2, currIntra->readStart2, (currIntra->readEnd2 - currIntra->readStart2 + 1) );
+  if( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) &
+      (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
+    addIntra += 0.25;
+  } else if ( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) |
+	      (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
+    addIntra += 0.5;
+  } else {
+    addIntra += 1.0;
+  }
+  return ( addIntra );
+}
 
 /**
-   Calculating the number of inter-transcript reads, accounting for the spliced reads in a proper manner.
+   It computes the 'adding number' of inter-transcript reads, counted accordingly to splice junctions:  1 is added if the two ends are fully mapped; 0.5 if one read is a splice junction; 0.25 if both reads are spliced (or partially mapped). Basically, this considers each MRF block separately. 
 */
-int getNumberOfInters( SuperInter* a ) {
-  int i;
-  double numberOfInters=0.0;
-  Inter* currInter;
-  for( i=0; i<arrayMax( a->inters); i++) {
-    currInter = arru( a->inters, i, Inter* );
-    if( currInter->read1==NULL | currInter->read2==NULL | 
+float getAddingNumberInter( Inter* currInter ) {
+  float addInter=0.0;
+  if( currInter->read1==NULL | currInter->read2==NULL | 
 	(currInter->readEnd1 - currInter->readStart1 + 1) == 0 | 
 	(currInter->readEnd2 - currInter->readStart2 + 1) == 0 ) 
       die("Something is wrong with the inter pairs: read1[%s](e%d-s%d +1 )=%d read2[%s](e%d-s%d + 1 )=%d", 
 	  currInter->read1, currInter->readEnd1, currInter->readStart1, (currInter->readEnd1 - currInter->readStart1 + 1),
 	  currInter->read2, currInter->readEnd2, currInter->readStart2, (currInter->readEnd2 - currInter->readStart2 + 1) );
-    if( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) &
-	(currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
-      numberOfInters += 0.25;
-    } else if ( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) |
-		(currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
-      numberOfInters += 0.5;
-    } else {
-      numberOfInters += 1.0;
-    }
+  if( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) &
+      (currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
+    addInter += 0.25;
+  } else if ( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) |
+	      (currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
+    addInter += 0.5;
+  } else {
+    addInter += 1.0;
   }
-  return (int) rint( numberOfInters );
+  return( addInter );
+}
+
+
+
+/**
+   Calculating the number of inter-transcript reads, accounting for the spliced reads in a proper manner.
+*/
+double getNumberOfIntras( SuperIntra* a ) {
+  int i;
+  double numberOfIntras=0.0;
+  Intra* currIntra;
+  for( i=0; i<arrayMax( a->intras); i++) {
+    numberOfIntras += (double) arrp( a->intras, i, Intra )->addNumIntra;
+  }
+  return ( numberOfIntras );
+}
+
+/**
+   Calculating the number of inter-transcript reads, accounting for the spliced reads in a proper manner.
+*/
+float getNumberOfInters( SuperInter* a ) {
+  int i;
+  double numberOfInters=0.0;
+  Inter* currInter;
+  for( i=0; i<arrayMax( a->inters); i++) {
+    numberOfInters += arru( a->inters, i, Inter* )->addNumInter;
+  }
+  return ( numberOfInters );
 }
 
 static int sortIntersByType (Inter *a, Inter *b)
@@ -369,34 +417,7 @@ static void addInterCoordinates (Interval *transcript, Array coordinates, int *t
   }
 }
 
-float getAddingIntras( Intra* currIntra, char* read1, char* read2) {
-  float numIntra=0.0;
-  if( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) &
-      (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
-    numIntra += 0.25;
-  } else if ( (currIntra->readEnd1 - currIntra->readStart1 + 1) != strlen(read1) |
-	      (currIntra->readEnd2 - currIntra->readStart2 + 1) != strlen(read2) ) {
-    numIntra += 0.5;
-  } else {
-    numIntra += 1.0;
-  }
-  return ( numIntra );
-}
 
-
-static float getAddingNumber( Inter* currInter ) {
-  float numInter=0.0;
-  if( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) &
-      (currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
-    numInter += 0.25;
-  } else if ( (currInter->readEnd1 - currInter->readStart1 + 1) != strlen(currInter->read1) |
-	      (currInter->readEnd2 - currInter->readStart2 + 1) != strlen(currInter->read2) ) {
-    numInter += 0.5;
-  } else {
-    numInter += 1.0;
-  }
-  return( numInter );
-}
 
 static int pairCount (Array inters)
 {
@@ -417,14 +438,14 @@ static int pairCount (Array inters)
     currPC->number1 = currInter->number1;
     currPC->number2 = currInter->number2;
     currPC->pairType = currInter->pairType;
-    currPC->count = getAddingNumber( currInter );
+    currPC->count = getAddingNumberInter( currInter );
     j = i + 1;
     while (j < arrayMax (intersV)) {
       nextInter = arrp (intersV,j,Inter);
       if (currInter->pairType == nextInter->pairType && 
 	  currInter->number1  == nextInter->number1 && 
 	  currInter->number2  == nextInter->number2) {
-	currPC->count += getAddingNumber( currInter ) ;
+	currPC->count += getAddingNumberInter( currInter ) ;
       }
       else {
 	break;
@@ -734,7 +755,6 @@ int main (int argc, char *argv[])
   Interval *transcript1,*transcript2;
   Array inters;
   Inter *currInter,*nextInter;
-  //Array intras;
   Intra *currIntra,*nextIntra;
   int i,j;
   int exon1,exon2,intron1,intron2,junction1,junction2;
@@ -759,7 +779,7 @@ int main (int argc, char *argv[])
   char *exonCoordinates1,*exonCoordinates2; 
   int minNumberOfPairedEndReads;
 
-  if ((Conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
+  if ((conf = confp_open(getenv("FUSIONSEQ_CONFPATH"))) == NULL) {
     die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
@@ -771,8 +791,8 @@ int main (int argc, char *argv[])
   srand (time (0));
   buffer = stringCreate (100);
   stringPrintf (buffer,"%s/%s", 
-                confp_get(Conf, "ANNOTATION_DIR"), 
-                confp_get(Conf, "TRANSCRIPT_COMPOSITE_MODEL_FILENAME"));
+                confp_get( conf, "ANNOTATION_DIR"), 
+                confp_get( conf, "TRANSCRIPT_COMPOSITE_MODEL_FILENAME"));
   intervalFind_addIntervalsToSearchSpace (string (buffer),0);
   inters = arrayCreate (1000000,Inter);
   mrfLines = 0;
@@ -808,6 +828,7 @@ int main (int argc, char *argv[])
             currInter->readEnd2 = currMrfBlock2->targetEnd;
             currInter->read1 = hlr_strdup (currMrfRead1->sequence);
             currInter->read2 = hlr_strdup (currMrfRead2->sequence);
+	    currInter->addNumInter = getAddingNumberInter( currInter );
             assignPairType (currInter,exon1,intron1,junction1,exon2,intron2,junction2);
           }
           if (transcript1 == transcript2) {
@@ -819,13 +840,13 @@ int main (int argc, char *argv[])
 	      if( ret == 1 ) { // new SuperIntra
 		currSuperIntra->intras = arrayCreate (100,Intra);
 	      }
-	      Intra *currSuperIntraIntrasEntry = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
-	      currSuperIntraIntrasEntry->transcript= transcript1;
-	      currSuperIntraIntrasEntry->readStart1 = currMrfBlock1->targetStart;
-	      currSuperIntraIntrasEntry->readStart2 = currMrfBlock2->targetStart;
-	      currSuperIntraIntrasEntry->readEnd1 = currMrfBlock1->targetEnd;
-	      currSuperIntraIntrasEntry->readEnd2 = currMrfBlock2->targetEnd;
-	      currSuperIntra->numIntras += getAddingIntras( currSuperIntraIntrasEntry, currMrfRead1->sequence, currMrfRead2->sequence);
+	      Intra *currIntra = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
+	      currIntra->transcript= transcript1;
+	      currIntra->readStart1 = currMrfBlock1->targetStart;
+	      currIntra->readStart2 = currMrfBlock2->targetStart;
+	      currIntra->readEnd1 = currMrfBlock1->targetEnd;
+	      currIntra->readEnd2 = currMrfBlock2->targetEnd;
+	      currIntra->addNumIntra += getAddingNumberIntra( currIntra, currMrfRead1->sequence, currMrfRead2->sequence);
 	    }
           }
         } //else die("overlapping intervals?");         
@@ -940,14 +961,16 @@ int main (int argc, char *argv[])
     // get the corresponding intra-transcript information
     superIntra1 = getSuperIntra (superIntras,currSuperInter->transcript1); 
     superIntra2 = getSuperIntra (superIntras,currSuperInter->transcript2);
+    float numIntras1 = superIntra1 ? getNumberOfIntras( superIntra1 ) : 0.0;
+    float numIntras2 = superIntra2 ? getNumberOfIntras( superIntra2 ) : 0.0;
+    float numInters = getNumberOfInters ( currSuperInter );
     exonCoordinates1 = hlr_strdup (exonCoordinates2string (currSuperInter->transcript1->subIntervals));
     exonCoordinates2 = hlr_strdup (exonCoordinates2string (currSuperInter->transcript2->subIntervals));
-    printf ("%d\t%.2f\t%.2f\t%.5f\t%.5f\t%f\t%f\t%s\t",
-	    getNumberOfInters ( currSuperInter ),
+    printf ("%.2f\t%.2f\t%.2f\t%.5f\t%.5f\t%.2f\t%.2f\t%s\t",
+	    numInters,
 	    meanInterAB,meanInterBA,pvalueAB,pvalueBA,
-	    superIntra1 ? superIntra1->numIntras : 0,
-	    superIntra2 ? superIntra2->numIntras : 0,
-	    strEqual (currSuperInter->transcript1->chromosome,currSuperInter->transcript2->chromosome) ? "cis" : "trans");
+	    numIntras1,numIntras2,
+	    strEqual (currSuperInter->transcript1->chromosome, currSuperInter->transcript2->chromosome) ? "cis" : "trans");
     printf ("%s\t%d\t%s\t%s\t%c\t%d\t%d\t",
 	    currSuperInter->transcript1->name,
 	    arrayMax (currSuperInter->transcript1->subIntervals),
@@ -964,20 +987,20 @@ int main (int argc, char *argv[])
 	    currSuperInter->transcript2->strand,
 	    currSuperInter->transcript2->start,
 	    currSuperInter->transcript2->end);
-    for (j = 0; j < arrayMax (currSuperInter->inters); j++) {
+    for (j = 0; j < arrayMax (currSuperInter->inters); j++) { // generating pair-type information: type,elementNum1,elementNum2,readStart1,readEnd1,readStart2,readEnd2| etc. NOTE: this is done at the block level 
       currInter = arru (currSuperInter->inters,j,Inter*);
       printf ("%d,%d,%d,%d,%d,%d,%d%s",
 	      currInter->pairType,currInter->number1,currInter->number2,
 	      currInter->readStart1,currInter->readEnd1,
-	      currInter->readStart2,currInter->readEnd2, 
+	      currInter->readStart2,currInter->readEnd2,
 	      j < arrayMax (currSuperInter->inters) - 1 ? "|" : "\t");
     }
-    printf ("%s_%05d\t",argv[1],i + 1);
-    for (j = 0; j < arrayMax (currSuperInter->inters); j++) {
+    printf ("%s_%05d\t",argv[1],i + 1); // printing id
+    for (j = 0; j < arrayMax (currSuperInter->inters); j++) { // printing the sequences of transcript1. NOTE: same order as inters, i.e. some sequences are duplicated
       currInter = arru (currSuperInter->inters,j,Inter*);
       printf ("%s%s",currInter->read1,j < arrayMax (currSuperInter->inters) - 1 ? "|" : "\t");
     }
-    for (j = 0; j < arrayMax (currSuperInter->inters); j++) {
+    for (j = 0; j < arrayMax (currSuperInter->inters); j++) { // printing the sequences of transcript2. NOTE: same order as inters, i.e. some sequences are duplicated
       currInter = arru (currSuperInter->inters,j,Inter*);
       printf ("%s%s",currInter->read2,j < arrayMax (currSuperInter->inters) - 1 ? "|" : "\n");
     }
@@ -998,36 +1021,9 @@ int main (int argc, char *argv[])
   arrayDestroy( superInters );
   arrayDestroy( inters );
   stringDestroy (buffer);
+  confp_close(conf);
   return EXIT_SUCCESS;
 }
 
 
 
-/*
-
-int getCompatibleDirection() {
-  int i;
-  int F=0;
-  int R=0;
-  GfrPairCount* currPC;
-  for(i=0; i < arrayMax(countPairs); i++) {
-    currPC = arrp( countPairs, i, GfrPairCount );
-    if( currPC->number1 == currPC->number2 ) {
-      F += currPC->count;
-      R += currPC->count;
-    } else {
-      if( currPC->number1 > currPC->number2 ) 
-	R += currPC->count;
-      else
-	F += currPC->count;
-    }
-  }
-  if( F > R )
-    return 1;
-  else if ( F < R ) {
-    return -1;
-  } else 
-    return 0;
-}
-
-*/
