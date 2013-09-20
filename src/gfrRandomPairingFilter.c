@@ -9,17 +9,14 @@
 #include <bios/linestream.h>
 #include <mrf/mrf.h>
 
-#include <uthash.h>
+#include "uthash.h"
+#include "gfr.h"
 
 struct geneFusionsCount {
   const char* geneID;
   int numFusions;
   UT_hash_handle hh;
 };
-
-
-#include "gfr.h"
-
 
 /**
   @file gfrRandomPairingFilter.c 

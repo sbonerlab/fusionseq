@@ -4,7 +4,6 @@ extern "C" {
 #include <bios/linestream.h>
 }
 
-
 #ifndef __CINT__
 
 //--- ROOT includes ---
@@ -19,8 +18,6 @@ TROOT root("Rint","The ROOT Interactive Interface");
 
 #endif
 
-
-
 int main (int argc, char *argv[])
 { 
 	LineStream ls;
@@ -29,7 +26,7 @@ int main (int argc, char *argv[])
 	Stringa buffer;
 
 	if (argc != 2) {
-		usage ("%s <file.intraOffsets>");
+		usage((char*) "%s <file.intraOffsets>");
 	}
 
 	TH1 *his = new TH1D ("","Intra-read distribution",1000,0,1000);
@@ -45,10 +42,10 @@ int main (int argc, char *argv[])
 	buffer = stringCreate (100);
 	pos = strchr (argv[1],'.');
 	if (pos == NULL) {
-		die ("Expected <file.intraOffsets>: %s",argv[1]);
+		die ((char*) "Expected <file.intraOffsets>: %s",argv[1]);
 	}
 	*pos = '\0';
-	stringPrintf (buffer,"%s_intraDistribution.jpg",argv[1]);
+	stringPrintf (buffer, (char*) "%s_intraDistribution.jpg",argv[1]);
 	canv->Print (string (buffer),"jpg");
 	stringDestroy (buffer);
 	return 0;

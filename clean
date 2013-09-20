@@ -6,6 +6,8 @@ echo autoclean: cleaning root
 rm -rf aclocal.m4 \
        autom4te.cache \
        autoscan.log \
+       build-aux \
+       compile \
        config.guess \
        config.h \
        config.h.in~ \
@@ -31,27 +33,6 @@ cd m4 && rm -rf \
        ltoptions.m4 \
        ltsugar.m4 \
        ltversion.m4
-cd ..
-
-echo autoclean: cleaning src
-cd src && rm -rf \
-       Makefile.in \
-       Makefile
-echo autoclean: cleaning src/optional
-cd optional && rm -rf \
-       Makefile.in \
-       Makefile
-cd ..
-echo autoclean: cleaning src/test
-cd test && rm -rf \
-       Makefile.in \
-       Makefile
-cd ..
-echo autoclean: cleaning src/cgi
-cd cgi && rm -rf \
-       Makefile.in \
-       Makefile
-cd ..
 cd ..
 
 echo autoclean: cleaning doc

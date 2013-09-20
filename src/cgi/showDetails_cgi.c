@@ -161,11 +161,11 @@ int main (int argc, char *argv[])
       fflush( stdout );
       for (i = 0; i < arrayMax (currGE->pairCounts); i++) {
         currGEPC = arrp (currGE->pairCounts,i,GfrPairCount);	
-	printf ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>\n", 
-		getPairTypeName(currGEPC->pairType), 
-		getEntryNumber(currGEPC->number1, currGEPC->pairType, 1),
-		getEntryNumber(currGEPC->number2, currGEPC->pairType, 2),
-		currGEPC->count);
+        printf ("<tr><td>%s</td><td>%s</td><td>%s</td><td>%.2f</td></tr>\n", 
+		        getPairTypeName(currGEPC->pairType), 
+		        getEntryNumber(currGEPC->number1, currGEPC->pairType, 1),
+		        getEntryNumber(currGEPC->number2, currGEPC->pairType, 2),
+		        currGEPC->count);
       }
       puts ("</table>");
       puts ("</td>");

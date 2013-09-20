@@ -26,12 +26,6 @@ int inRegion (int istart, int iend, int rstart, int rend)
   return 0;
 }
 
-unsigned long int randomN (int n)
-{
-  return random() / ((2 << 30) - 1) * n;
-}
-
-
 int inRegions (Array regions, int chromosome, int start, int end)
 {
   SRegion_t *tmp;

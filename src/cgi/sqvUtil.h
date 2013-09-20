@@ -55,7 +55,6 @@ typedef struct {
 
 
 void swapInt (int *a, int *b);
-unsigned long int randomN (int n);
 
 int inRegion (int istart, int iend, int rstart, int rend);
 int inRegions (Array regions, int chromosome, int start, int end);
