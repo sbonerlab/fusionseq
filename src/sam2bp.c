@@ -1,5 +1,6 @@
 #include <bios/log.h>
 #include <bios/format.h>
+#include <bios/linestream.h>
 #include <mrf/sam.h>
 
 typedef struct {
@@ -28,31 +29,24 @@ static int sortSuperBreakPointsBySupport(SuperBreakPoint *a,
 }
 
 int main (int argc, char *argv[]) {
-  SamEntry *sam_entry;
-  BreakPoint *bp,*next_bp;
-  Array super_breakpoints;
-  SuperBreakPoint *super_bp;
-  char *target_copy;
-  char *pos;
-
-  SamParser* parser = samparser_fromfile("-");
-  Array samEntries = samparser_get_all_entries(parser);
+  SamParser* parser = samparser_from_file("-");
+  Array sam_entries = samparser_get_all_entries(parser);
   samparser_free(parser); 
   Array breakpoints = arrayCreate(10000, BreakPoint);
-  for (int i = 0; i < arrayMax(samEntries); ++i) {
-    SamEntry* sam_entry = arrp(samEntries, 0, SamEntry);
-    BreakPoint* bp = arrayp(breakpoints, arrayMax(breakPoints), BreakPoint);
+  for (int i = 0; i < arrayMax(sam_entries); ++i) {
+    SamEntry* sam_entry = arrp(sam_entries, 0, SamEntry);
+    BreakPoint* bp = arrayp(breakpoints, arrayMax(breakpoints), BreakPoint);
     bp->target = hlr_strdup(sam_entry->rname);
     bp->read = hlr_strdup(sam_entry->seq);
     bp->position = sam_entry->pos;
   }
 
-  arraySort(breakPoints, (ARRAYORDERF) sortBreakPointsByTargetAndOffset);
-  char* target_copy = NULL;
+  arraySort(breakpoints, (ARRAYORDERF) sortBreakPointsByTargetAndOffset);
   Array super_breakpoints = arrayCreate(1000, SuperBreakPoint);
   int i = 0;
-  while (i < arrayMax(breakPoints)) {
-    BreakPoint* bp = arrp(breakPoints, i, BreakPoint);
+  while (i < arrayMax(breakpoints)) {
+    char* target_copy = NULL;
+    BreakPoint* bp = arrp(breakpoints, i, BreakPoint);
     SuperBreakPoint* super_bp = 
         arrayp(super_breakpoints, arrayMax(super_breakpoints), SuperBreakPoint);
     super_bp->breakPoints = arrayCreate(100, BreakPoint*);
@@ -66,8 +60,8 @@ int main (int argc, char *argv[]) {
     super_bp->tileCoordinate2 = hlr_strdup(pos + 1);
     arrayPush(super_bp->breakPoints, bp, BreakPoint*);
     int j = i + 1;
-    while (j < arrayMax (breakPoints)) {
-      next_bp = arrp(breakPoints, j, BreakPoint);
+    while (j < arrayMax(breakpoints)) {
+      BreakPoint* next_bp = arrp(breakpoints, j, BreakPoint);
       if (strEqual(bp->target, next_bp->target)) {
         arrayPush(super_bp->breakPoints, next_bp, BreakPoint*);
       } else {

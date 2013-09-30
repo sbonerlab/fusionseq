@@ -1,9 +1,8 @@
 EXTRA_DIST = m4 scripts default.fusionseqrc
 ACLOCAL_AMFLAGS = -I m4
 AM_MAKEFLAGS = --no-print-directory
-
-AM_CPPFLAGS = \
-	-I${top_srcdir}/src
+AM_CPPFLAGS =  -I${top_srcdir}/src
+AM_CFLAGS = -std=c99
 
 PC_SED = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
