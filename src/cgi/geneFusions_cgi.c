@@ -62,17 +62,14 @@ static void generateOutput (char* prefix, char* typeSelected, int minNum)
   puts ("Expression signal: &nbsp;");
   fflush(stdout);
   while( chrSignal = ls_nextLine(ls)) {
-        
 	char* chrTmp = stringBetween( prefix, ".bgr.gz", chrSignal );
-	chrTmp++;      
+	chrTmp++;
+    int flankingRegion = atoi(confp_get(Conf, "UCSC_GENOME_BROWSER_FLANKING_REGION"));
+	char* link = htmlLinker_generateLinkToGenomeBrowserAtUCSC(
+        "hg18","vertebrate", "human", chrTmp, flankingRegion,
+		50000000 + flankingRegion);
 	printf ("[<a href=%s&hgt.customText=%s/BGRS/%s_%s.bgr.gz target='blank'>%s</a>]&nbsp;",
-		htmlLinker_generateLinkToGenomeBrowserAtUCSC("hg18","vertebrate","human", chrTmp, 
-			confp_get(Conf, "UCSC_GENOME_BROWSER_FLANKING_REGION"), 
-			50000000 + confp_get(Conf, "UCSC_GENOME_BROWSER_FLANKING_REGION")),
-			confp_get(Conf, "WEB_DATA_LINK"), 
-			prefix, 
-			chrTmp, 
-			chrTmp); 
+            link, confp_get(Conf, "WEB_DATA_LINK"), prefix, chrTmp, chrTmp); 
 	if (countCol > 10) {
 	  puts( "<BR>" );
 	  countCol=0;

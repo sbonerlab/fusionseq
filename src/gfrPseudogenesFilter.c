@@ -5,13 +5,13 @@
 #include "gfr.h"
 
 /**
-   @file gfrRepeatMaskerFilter.c
-   @brief Filter to remove artifacts due to mis-alignment to repetitive regions.
+   @file gfrPseudogenesFlter.c
+   @brief Filter to remove artifacts due to mis-alignment to pseudogenes.
    @details It removes candidates with reads overlapping repetitive sequences. It looks at non-exonic reads and, if some overlap exists with repetitive regions, the reads are excluded and the number of inter-reads is updated accordingly. MAX_OVERLAP_ALLOWED will determine if an overlap triggers the removal of the read. If the remaining number of reads is below the threshold (minNumberOfReads), the fusion candidate is removed.
    
    @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
    @version 0.8
-   @date 2013.09.10
+   @date 2013.10.30
    @remarks WARNings will be output to stdout to summarize the filter results.
    @pre A valid GFR file as input, including stdin.
    @pre repeatMasker.interval The repetitive regions in interval format; typically from RepeatMasker, defined in .fusionseqrc
@@ -59,19 +59,19 @@ int main (int argc, char *argv[]) {
 	  die("%s:\tCannot find .fusionseqrc: %s", argv[0], getenv("FUSIONSEQ_CONFPATH"));
 	  return EXIT_FAILURE;
 	}
-	if( confp_get( Conf, "REPEATMASKER_DIR")==NULL ) {
-	  die("%s:\tCannot find REPEATMASKER_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+	if( confp_get( Conf, "PSEUDOGENE_DIR")==NULL ) {
+	  die("%s:\tCannot find PSEUDOGENE_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
 	  return EXIT_FAILURE;
 	}
-	if( confp_get( Conf, "REPEATMASKER_FILENAME")==NULL ) {
-	  die("%s:\tCannot find REPEATMASKER_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+	if( confp_get( Conf, "PSEUDOGENE_FILENAME")==NULL ) {
+	  die("%s:\tCannot find PSEUDOGENE_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
 	  return EXIT_FAILURE;
 	}
 
 	if (argc != 2) {
 	  usage ("%s <minNumInterReads>",argv[0]);
 	}
-	stringPrintf( buffer, "%s/%s", confp_get( Conf, "REPEATMASKER_DIR"), confp_get( Conf, "REPEATMASKER_FILENAME") );
+	stringPrintf( buffer, "%s/%s", confp_get( Conf, "PSEUDOGENE_DIR"), confp_get( Conf, "PSEUDOGENE_FILENAME") );
 	intervalFind_addIntervalsToSearchSpace (string(buffer),0);
 	stringDestroy(buffer); 
 	minNumInterReads = atof (argv[1]);
@@ -80,13 +80,13 @@ int main (int argc, char *argv[]) {
 	gfr_init ("-");
 	puts (gfr_writeHeader ());
 	while (currGE = gfr_nextEntry ()){
-	  int readLength = strlen(arru(currGE->readsTranscript1, 0, char*));
+	  int readLength = strlen( arru( currGE->readsTranscript1, 0, Texta ) );
 	  numberOfInters = (float) currGE->numInter;
 	  for (i = 0; i < arrayMax (currGE->interReads); i++) {
 	    currGIR = arrp (currGE->interReads,i,GfrInterRead);
-	    if (currGIR->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC) {
-	      continue;
-	    }
+	    //if (currGIR->pairType == GFR_PAIR_TYPE_EXONIC_EXONIC) {
+	    // continue;
+	    // }
 	    totalOverlaps = 0;
 	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript1,currGIR->readStart1,currGIR->readEnd1);
 	    for(j=0; j < arrayMax( intervals ); j++) {
@@ -118,7 +118,7 @@ int main (int argc, char *argv[]) {
 	  count++;
 	}
 	gfr_deInit ();
-	warn ( "%s_interval: %s/%s", argv[0], confp_get( Conf, "REPEATMASKER_DIR"), confp_get( Conf, "REPEATMASKER_FILENAME") );
+	warn ( "%s_interval: %s/%s", argv[0], confp_get( Conf, "PSEUDOGENE_DIR"), confp_get( Conf, "PSEUDOGENE_FILENAME") );
 	warn ("%s_numRemoved: %d",argv[0],countRemoved);
 	warn ("%s_numGfrEntries: %d",argv[0],count);
 	return 0;

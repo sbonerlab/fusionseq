@@ -34,8 +34,11 @@ int main(int argc, char *argv[])
 	double *observedOffsets;
 	double *randomOffsets;
 
- 	if (argc != 6) 
-		usage("%s <minNumReads> <minNumUniqueOffsets> <minNumReadsForKS> <pValueCutoffForKS> <numPossibleOffsets>", argv[0]);
+ 	if (argc != 6) {
+		usage((char*) "%s <minNumReads> <minNumUniqueOffsets> "
+              "<minNumReadsForKS> <pValueCutoffForKS> <numPossibleOffsets>", 
+              argv[0]);
+    }
 	
 	minNumReads         = std::atoi(argv[1]);
 	minNumUniqueOffsets = std::atoi(argv[2]);

@@ -237,8 +237,8 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
       stringPrintf(cmd, "cd %s; %s %s %s / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa %s.smallhomology.psl &>/dev/null", confp_get(conf, "TMP_DIR"), confp_get( conf, "BLAT_GFCLIENT"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT"), minReadSize - (int)(0.1 * minReadSize) > 20 ? minReadSize - (int) (0.1 * minReadSize) : 20 ,  currGE->id,  currGE->id);
       int attempts=0;
       ret = hlr_system( string(cmd), 1 );
-      while( hlr_system( string(cmd), 1 ) && attempts<50 ) attempts++;
-      if( attempts == 50 ) {
+      while( hlr_system( string(cmd), 1 ) && attempts<5000 ) attempts++;
+      if( attempts == 5000 ) {
 	die("Cannot map the reads %s", string( cmd ));
 	return EXIT_FAILURE;
       }
@@ -246,22 +246,18 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
       stringPrintf(cmd,  "%s/%s.smallhomology.psl", confp_get( conf, "TMP_DIR"), currGE->id);
       blatParser_initFromFile( string(cmd) );
       tooMany = 1;
-      Array indexesToRemove = arrayCreate( 10, int );
       while( blQ = blatParser_nextQuery() ) {
 	tooMany = 0;
-	homologousCount+= arrayMax( blQ->entries ) - 1;
-	if( homologousCount > 0 ) {
-	   char* value = strchr( blQ->qName,'/' );
-	   if( value ) *value = '\0'; else die("Not a valid index in the blat query name:\t%s", blQ->qName );
-	   array( indexesToRemove, arrayMax( indexesToRemove ), int) = atoi( blQ->qName ); // the following three lines should removed the read if writing the GFR entry
-	   
+	if( arrayMax( blQ->entries ) > 1 ) {
+	  homologousCount+= arrayMax( blQ->entries ) - 1;
+	  char* value = strchr( blQ->qName,'/' );
+	  if( value ) *value = '\0'; else die("Not a valid index in the blat query name:\t%s", blQ->qName );
+	  int indexOfInter = atoi( blQ->qName ); // the following three lines should removed the read if writing the GFR entry
+	  GfrInterRead *currGIR = arrp( currGE->interReads, indexOfInter, GfrInterRead );
+	  currGIR->flag = 1;
 	}
       }
       blatParser_deInit();
-      arraySort( indexesToRemove, (ARRAYORDERF) arrayIntcmp );
-      arrayUniq( indexesToRemove, NULL, (ARRAYORDERF) arrayIntcmp);
-      for ( h = 0; h < arrayMax ( indexesToRemove ); h++ ) arrp( currGE->interReads, h, GfrInterRead )->flag = 1;
-      arrayDestroy( indexesToRemove );
       if (  tooMany == 1 || ( ( (double) homologousCount / (double) ( arrayMax(currGE->readsTranscript1) + arrayMax(currGE->readsTranscript2) ) )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) ) {
 	countRemoved++;
 	stringPrintf (cmd,"cd %s; rm -rf %s_reads*.fa %s_reads?.collapsed.fa %s_transcript?.fa %s.smallhomology.psl", confp_get(conf, "TMP_DIR"), currGE->id,currGE->id,currGE->id,currGE->id);
@@ -269,7 +265,7 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
 	continue;
       }
       // writing the gfrEntry, if everthing else didn't stop 
-      updateStats( currGE );
+      if( homologousCount > 0 ) updateStats( currGE );
       puts (gfr_writeGfrEntry (currGE));
       count++;
       // removing temporary files
@@ -295,20 +291,3 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
 }
 
 
-/*homologousCount = 0; // read 2
-      stringPrintf(cmd, "%s %s %s / -t=dna -q=dna -minScore=%d -out=psl %s/%s_reads2.fa stdout" , confp_get( conf, "BLAT_GFCLIENT"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT"), minReadSize - 5 > 20 ? minReadSize - 5 : 20 , confp_get(conf, "TMP_DIR"), currGE->id);
-      // reading the results of blast from Pipe
-      blatParser_initFromPipe( string(cmd) );
-      tooMany = 1;
-      contReads = 0;
-      while( blQ = blatParser_nextQuery() ) {
-	tooMany = 0;
-	homologousCount+= arrayMax( blQ->entries ) - 1;
-      }
-      blatParser_deInit();
-      if ( tooMany == 1 || ( ( (double)homologousCount / (double)arrayMax(currGE->readsTranscript2)  )  > atof(confp_get(conf, "MAX_FRACTION_HOMOLOGOUS")) ) ) {
-	countRemoved++;
-	stringPrintf (cmd,"cd %s;rm -rf %s_reads?.fa %s_reads?.collapsed.fa %s_transcript?.fa", confp_get(conf, "TMP_DIR"), currGE->id,currGE->id,currGE->id);
-	hlr_system( string(cmd) , 0); 
-	continue;
-	}*/
