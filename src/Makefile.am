@@ -49,7 +49,8 @@ bin_PROGRAMS = geneFusions \
 	       gfrSpliceJunctionFilter \
 	       gfrClassify \
 	       gfrWhiteListFilter \
-	       gfrRandomPairingFilter
+	       gfrRandomPairingFilter \
+	       gfrPseudogenesFilter
 
 # -----------------------------------------------------------------------------
 # CORE: Finding candidate fusions
@@ -111,6 +112,9 @@ gfrWhiteListFilter_LDADD = libfusionseq.la -lbios
 
 gfrRandomPairingFilter_SOURCES = gfrRandomPairingFilter.c
 gfrRandomPairingFilter_LDADD = libfusionseq.la -lbios
+
+gfrPseudogenesFilter_SOURCES = gfrPseudogenesFilter.c
+gfrPseudogenesFilter_LDADD = libfusionseq.la -lbios
 
 # -----------------------------------------------------------------------------
 # CORE: Identifying sequences of the junction
