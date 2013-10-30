@@ -85,23 +85,20 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
 
   cmd = stringCreate (100);
   // initializing the gfServers
-  stringPrintf( cmd, "%s status %s %d 2> /dev/null", confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1  );
-  LineStream ls = ls_createFromPipe( string(cmd) );
-  if( ls_nextLine( ls ) == NULL  ) { // not initialized
-    ls_destroy_func( ls );
+  stringPrintf( cmd, "%s status %s %d &> /dev/null", confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1  );
+  int ret = hlr_system( string(cmd), 1 );
+  if( ret != 0 ) { // not initialized
     stringPrintf( cmd , "%s -repMatch=100000 -tileSize=12 -canStop -log=%s/gfServer_ribosomal.log start %s %d %s/%s &",  confp_get( conf, "BLAT_GFSERVER"), confp_get(conf, "TMP_DIR"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1, confp_get(conf, "RIBOSOMAL_DIR"), confp_get(conf, "RIBOSOMAL_FILENAME"));
     hlr_system( string( cmd ), 0 );
-    
     long int startTime = time(0);
     stringPrintf( cmd , "%s status %s %d 2> /dev/null", confp_get( conf, "BLAT_GFSERVER"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1);
-    static unsigned short int initialized=0;
-    while( !initialized && (time(0)-startTime)<600 ) {
-      ls = ls_createFromPipe( string(cmd) );
-      if( ls_nextLine( ls ) != NULL ) initialized=1; 
-      ls_destroy_func( ls );
-    }
-    if( initialized==0 )  die("gfServer not initialized: %s %s %d", confp_get( conf, "BLAT_GFSERVER"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1);
-  } 
+     while( hlr_system( string(cmd), 1) && (time(0)-startTime)<600 ) {
+     if( hlr_system( string(cmd), 1 ) != 0 )  {
+       die("gfServer for %s/%s not initialized: %s %s %d", confp_get(conf, "RIBOSOMAL_DIR"), confp_get(conf, "RIBOSOMAL_FILENAME"), confp_get( conf, "BLAT_GFSERVER"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1);
+       return EXIT_FAILURE;
+     } 
+     }
+  }
   gfr_init ("-");
   gfrEntries = arrayCreate( 100, GfrEntry );
   gfrEntries =  gfr_parse ();
@@ -128,7 +125,14 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
     writeFasta( currGE, &minReadSize, confp_get(conf, "TMP_DIR") );
     
     stringPrintf(cmd, "cd %s;%s %s %d / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa %s.ribo.psl  &>/dev/null" , confp_get(conf, "TMP_DIR"), confp_get( conf, "BLAT_GFCLIENT"),  confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT"))+1 , minReadSize - 5 > 20 ? minReadSize - 5 : 20 ,  currGE->id, currGE->id);
-    hlr_system( string(cmd), 0 );
+    hlr_system( string(cmd), 1 );
+    int attempts=0;
+    ret = hlr_system( string(cmd), 1 );
+    while( hlr_system( string(cmd), 1 ) && attempts<5000 ) attempts++;
+    if( attempts == 5000 ) {
+      die("Cannot map the reads %s", string( cmd ));
+      return EXIT_FAILURE;
+    }
 
     // reading the results of blast from File
     stringPrintf(cmd,  "%s/%s.ribo.psl", confp_get( conf, "TMP_DIR"), currGE->id);
@@ -154,7 +158,7 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
       countRemoved++;
     }
     // removing temporary files
-    stringPrintf (cmd,"rm -rf %s/%s_reads.fa %/%s.ribo.psl", confp_get(conf, "TMP_DIR"), currGE->id, confp_get(conf, "TMP_DIR"), currGE->id );
+    stringPrintf (cmd,"rm -rf %s/%s_reads.fa %s/%s.ribo.psl", confp_get(conf, "TMP_DIR"), currGE->id, confp_get(conf, "TMP_DIR"), currGE->id );
     hlr_system( string(cmd) , 1);      
   }
   
@@ -163,7 +167,7 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
   stringDestroy( cmd );
   warn ("%s_numRemoved: %d",argv[0],countRemoved);  
   warn ("%s_numGfrEntries: %d",argv[0],count);
- 
+  
   confp_close(conf);
   return 0;
 }
