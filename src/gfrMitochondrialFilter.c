@@ -109,8 +109,8 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
       stringPrintf(cmd, "cd %s;%s %s %d / -t=dna -q=dna -minScore=%d -out=psl %s_reads.fa %s.mito.psl &>/dev/null", confp_get( conf, "TMP_DIR"), confp_get( conf, "BLAT_GFCLIENT"), confp_get( conf, "BLAT_GFSERVER_HOST"), atoi(confp_get( conf, "BLAT_GFSERVER_PORT")) + 2, minReadSize - 5 > 20 ? minReadSize - 5 : 20 , currGE->id, currGE->id);
       int attempts=0;
       ret = hlr_system( string(cmd), 1 );
-      while( hlr_system( string(cmd), 1 ) && attempts<50 ) attempts++;
-      if( attempts == 50 ) {
+      while( hlr_system( string(cmd), 1 ) && attempts<5000 ) attempts++;
+      if( attempts == 5000 ) {
 	die("Cannot map the reads %s", string( cmd ));
 	return EXIT_FAILURE;
       }
