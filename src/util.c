@@ -60,6 +60,45 @@ void updateStats( GfrEntry* currGE ) {
   currGE->numInter = numInters;
 }
 
+
+void writeFasta( GfrEntry* currGE, unsigned int *minReadSize, char* directory ) 
+{
+  FILE *freads;
+  int l, readSize1, readSize2;
+  // creating one fasta files with the reads
+  Stringa readsFA = stringCreate( 100 ); 
+  
+  // creating the fasta files with the reads 
+  stringPrintf( readsFA, "%s/%s_reads.fa", directory, currGE->id);
+  freads = fopen ( string(readsFA) ,"w");
+  if (freads == NULL) {
+    die ("Unable to open file: %s",string (readsFA));
+  }     
+  if (arrayMax(currGE->readsTranscript1) != arrayMax(currGE->readsTranscript2))
+    die("Error: different number of inter-transcript reads %d vs. %d", 
+	arrayMax( currGE->readsTranscript1),
+	arrayMax( currGE->readsTranscript2) );
+  
+  // writing the reads into file
+  for (l = 0; l < arrayMax (currGE->readsTranscript1); l++) {      
+    char* currRead1 = hlr_strdup( textItem (currGE->readsTranscript1,l)); // read1
+    char* currRead2 = hlr_strdup( textItem (currGE->readsTranscript2,l)); // read2
+    fprintf( freads, ">%d/1\n%s\n>%d/2\n%s\n", l, currRead1, l, currRead2 );
+    readSize1 = strlen( currRead1 );
+    readSize2 = strlen( currRead2 );
+    
+    if(readSize1 != readSize2 )
+      die("The two reads have different lengths: 1:%d vs 2:%d", readSize1, readSize2);
+    if ( readSize1 < *minReadSize )
+      *minReadSize = readSize1 ;
+    hlr_free( currRead1 );
+    hlr_free( currRead2 );
+  }
+  fclose( freads ); 
+  freads=NULL;
+  stringDestroy( readsFA );
+}
+
 Array util_readKnownGeneXrefs (char* fileName)
 {
   WordIter w;
