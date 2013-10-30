@@ -39,7 +39,7 @@ int getNucleotideOverlap( int start, int end, Interval* currInterval ) {
   int overlap=0;
   for( k=0; k<arrayMax( currInterval->subIntervals); k++ ) {
     SubInterval* currSubInterval = arrp( currInterval->subIntervals, k, SubInterval);
-    overlap+=rangeIntersection( start, end, currSubInterval->start, currSubInterval->end);
+    overlap+=positiveRangeIntersection( start, end, currSubInterval->start, currSubInterval->end);
   }
   return overlap;
 }
