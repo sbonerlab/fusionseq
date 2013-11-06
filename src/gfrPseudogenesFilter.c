@@ -7,14 +7,14 @@
 /**
    @file gfrPseudogenesFlter.c
    @brief Filter to remove artifacts due to mis-alignment to pseudogenes.
-   @details It removes candidates with reads overlapping repetitive sequences. It looks at non-exonic reads and, if some overlap exists with repetitive regions, the reads are excluded and the number of inter-reads is updated accordingly. MAX_OVERLAP_ALLOWED will determine if an overlap triggers the removal of the read. If the remaining number of reads is below the threshold (minNumberOfReads), the fusion candidate is removed.
+   @details It removes candidates with reads overlapping pseudogenes sequences. If the remaining number of reads is below the threshold (minNumberOfReads), the fusion candidate is removed.
    
    @author Andrea Sboner  (andrea.sboner.w [at] gmail.com).  
    @version 0.8
    @date 2013.10.30
    @remarks WARNings will be output to stdout to summarize the filter results.
    @pre A valid GFR file as input, including stdin.
-   @pre repeatMasker.interval The repetitive regions in interval format; typically from RepeatMasker, defined in .fusionseqrc
+   @pre ucscRetro.interval The retroposed regions in interval format; typically from UCSC retro table, defined in .fusionseqrc
    @pre [in] minNumberInterReads An integer representing the minimum number of reads to keep the fusion candidate.
  */
 
@@ -80,7 +80,7 @@ int main (int argc, char *argv[]) {
 	gfr_init ("-");
 	puts (gfr_writeHeader ());
 	while (currGE = gfr_nextEntry ()){
-	  int readLength = strlen( arru( currGE->readsTranscript1, 0, Texta ) );
+	  int readLength = strlen( arru( currGE->readsTranscript1, 0, char* ) );
 	  numberOfInters = (float) currGE->numInter;
 	  for (i = 0; i < arrayMax (currGE->interReads); i++) {
 	    currGIR = arrp (currGE->interReads,i,GfrInterRead);
@@ -89,25 +89,35 @@ int main (int argc, char *argv[]) {
 	    // }
 	    totalOverlaps = 0;
 	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript1,currGIR->readStart1,currGIR->readEnd1);
-	    for(j=0; j < arrayMax( intervals ); j++) {
+	    if( arrayMax( intervals ) > 0 ) { 
+	      currGE->numInter-= getNumInter( currGIR, readLength );
+	      currGIR->flag = 1;
+	      continue;
+	    }
+	    /*for(j=0; j < arrayMax( intervals ); j++) { // to fix SAM2MRF before using the total overlap
 	      Interval* currInterval = arru( intervals, j, Interval*);
 	      totalOverlaps = getNucleotideOverlap ( currGIR->readStart1,currGIR->readEnd1, currInterval );
 	    }
-	    if ( totalOverlaps >  ( ((double)(readLength)) * strtod(confp_get(Conf, "MAX_OVERLAP_ALLOWED"), NULL) ) ) {
+	    if ( totalOverlaps >  ( (double)(readLength) * 0.25 ) ) {
+	      currGE->numInter-= getNumInter( currGIR, readLength );
+	      currGIR->flag = 1;
+	      continue;
+	      }*/
+	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript2,currGIR->readStart2,currGIR->readEnd2);
+	    if( arrayMax( intervals ) > 0 ) { 
 	      currGE->numInter-= getNumInter( currGIR, readLength );
 	      currGIR->flag = 1;
 	      continue;
 	    }
-	    intervals = intervalFind_getOverlappingIntervals (currGE->chromosomeTranscript2,currGIR->readStart2,currGIR->readEnd2);
-	     for(j=0; j < arrayMax( intervals ); j++) {
+	    /* for(j=0; j < arrayMax( intervals ); j++) { // to fix SAM2MRF before using the total overlap
 	      Interval* currInterval = arru( intervals, j, Interval*);
 	      totalOverlaps = getNucleotideOverlap ( currGIR->readStart2,currGIR->readEnd2, currInterval );
 	    }
-	    if ( totalOverlaps >  ( ((double)(readLength)) * strtod(confp_get(Conf, "MAX_OVERLAP_ALLOWED"), NULL) ) ) {
+	    if ( totalOverlaps >  ( ((double)(readLength)) * 0.25) ) {
 	      currGE->numInter-= getNumInter( currGIR, readLength );
 	      currGIR->flag = 1;
 	      continue;
-	    }
+	      }*/
 	  }
 	  
 	  if (currGE->numInter < (float)minNumInterReads) { 
