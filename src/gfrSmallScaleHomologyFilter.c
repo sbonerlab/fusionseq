@@ -61,6 +61,18 @@ static char getTranscriptNumber (char *seqName)
   return *(pos + 1);
 }
 
+void checkPseudogeneOverlap( BlatQuery* blQ ) 
+{
+  PslEntry* blE;
+  int i;
+  Array intervals=arrayCreate(2, Interval);
+  for( i=0; i<arrayMax(blQ->entries); i++) {
+    blE = arrp( blQ->entries, i, PslEntry );
+    intervals = intervalFind_getOverlappingIntervals ( blE->tName, blE->tStart, blE->tEnd);
+    if( arrayMax(intervals)>0) arrayRemoveD( blQ->entries, i );
+  }
+}
+
 int main (int argc, char *argv[])
 {
   GfrEntry *currGE;
@@ -117,6 +129,15 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
     die("%s:\tCannot find BLAT_GFSERVER_PORT in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
     return EXIT_FAILURE;
   }
+ if( confp_get( conf, "PSEUDOGENE_DIR")==NULL ) {
+   die("%s:\tCannot find PSEUDOGENE_DIR in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+   return EXIT_FAILURE;
+ }
+ if( confp_get( conf, "PSEUDOGENE_FILENAME")==NULL ) {
+   die("%s:\tCannot find PSEUDOGENE_FILENAME in the configuration file: %s)", argv[0], getenv("FUSIONSEQ_CONFPATH") );
+   return EXIT_FAILURE;
+ }
+ 
   cmd = stringCreate (100);
   // initializing the gfServers
   stringPrintf( cmd, "%s status %s %s &> /dev/null", confp_get( conf, "BLAT_GFSERVER"), confp_get( conf, "BLAT_GFSERVER_HOST"), confp_get( conf, "BLAT_GFSERVER_PORT") );
@@ -134,6 +155,7 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
   } 
   // end initialization
 
+  
   gfr_init ("-");
   gfrEntries =  gfr_parse ();
   if (arrayMax (gfrEntries) == 0){
@@ -146,6 +168,10 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
   fnSequencesToAlign = stringCreate (100);
   count = 0;
   countRemoved = 0;
+
+  stringPrintf( buffer, "%s/%s", confp_get( conf, "PSEUDOGENE_DIR"), confp_get( conf, "PSEUDOGENE_FILENAME") );
+  intervalFind_addIntervalsToSearchSpace (string(buffer),0);
+
   puts (gfr_writeHeader ());
  
   for (i = 0; i < arrayMax (gfrEntries); i++) {
@@ -248,6 +274,7 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
       tooMany = 1;
       while( blQ = blatParser_nextQuery() ) {
 	tooMany = 0;
+	checkPseudogeneOverlap( blQ );
 	if( arrayMax( blQ->entries ) > 1 ) {
 	  homologousCount+= arrayMax( blQ->entries ) - 1;
 	  char* value = strchr( blQ->qName,'/' );
