@@ -771,7 +771,7 @@ int main (int argc, char *argv[])
   FILE *fp;
   int mrfLines;
   char* line;
-  int idx;
+  int idx, intvl1, intvl2;
   int numIntras = 0;
   SuperIntra testSuperIntra; 
   int index;
@@ -809,48 +809,49 @@ int main (int argc, char *argv[])
         currMrfBlock2 = arrp (currMrfRead2->blocks,j,MrfBlock);
         intervals1 = arrayCopy (intervalFind_getOverlappingIntervals (currMrfBlock1->targetName,currMrfBlock1->targetStart,currMrfBlock1->targetEnd));
         intervals2 = arrayCopy (intervalFind_getOverlappingIntervals (currMrfBlock2->targetName,currMrfBlock2->targetStart,currMrfBlock2->targetEnd));
-        if (arrayMax (intervals1) == 1 && arrayMax (intervals2) == 1) {
-          transcript1 = arru (intervals1,0,Interval*);
-          transcript2 = arru (intervals2,0,Interval*);
-          exon1 = getExonNumber (transcript1,currMrfBlock1->targetStart,currMrfBlock1->targetEnd);
-          exon2 = getExonNumber (transcript2,currMrfBlock2->targetStart,currMrfBlock2->targetEnd);
-          intron1 = getIntronNumber (transcript1,currMrfBlock1->targetStart,currMrfBlock1->targetEnd);
-          intron2 = getIntronNumber (transcript2,currMrfBlock2->targetStart,currMrfBlock2->targetEnd);
-          junction1 = getJunctionNumber (transcript1,currMrfBlock1->targetStart,currMrfBlock1->targetEnd,exon1,intron1);
-          junction2 = getJunctionNumber (transcript2,currMrfBlock2->targetStart,currMrfBlock2->targetEnd,exon2,intron2);
-          if (transcript1 != transcript2) {
-            currInter = arrayp (inters,arrayMax (inters),Inter);
-            currInter->transcript1 = transcript1;
-            currInter->transcript2 = transcript2;
-            currInter->readStart1 = currMrfBlock1->targetStart;
-            currInter->readStart2 = currMrfBlock2->targetStart;
-            currInter->readEnd1 = currMrfBlock1->targetEnd;
-            currInter->readEnd2 = currMrfBlock2->targetEnd;
-            currInter->read1 = hlr_strdup (currMrfRead1->sequence);
-            currInter->read2 = hlr_strdup (currMrfRead2->sequence);
-	    currInter->addNumInter = getAddingNumberInter( currInter );
-            assignPairType (currInter,exon1,intron1,junction1,exon2,intron2,junction2);
-          }
-          if (transcript1 == transcript2) {
-	    numIntras++;
-            if (exon1 > 0 && exon2 > 0) { // count intra only for reads mapped on exons
-              testSuperIntra.transcript = transcript1;
-	      int ret = arrayFindInsert( superIntras, &testSuperIntra, &idx,(ARRAYORDERF)sortSuperIntras );
-	      currSuperIntra = arrp( superIntras, idx, SuperIntra );
-	      if( ret == 1 ) { // new SuperIntra
-		currSuperIntra->intras = arrayCreate (100,Intra);
-	      }
-	      Intra *currIntra = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
-	      currIntra->transcript= transcript1;
-	      currIntra->readStart1 = currMrfBlock1->targetStart;
-	      currIntra->readStart2 = currMrfBlock2->targetStart;
-	      currIntra->readEnd1 = currMrfBlock1->targetEnd;
-	      currIntra->readEnd2 = currMrfBlock2->targetEnd;
-	      currIntra->addNumIntra += getAddingNumberIntra( currIntra, currMrfRead1->sequence, currMrfRead2->sequence);
+	for( intvl1 = 0; intvl1 < arrayMax (intervals1); intvl1++) {
+	  for( intvl2 = 0; intvl2 < arrayMax (intervals2); intvl2++ ) {
+	    transcript1 = arru (intervals1, intvl1,Interval*);
+	    transcript2 = arru (intervals2, intvl2,Interval*);
+	    exon1 = getExonNumber (transcript1,currMrfBlock1->targetStart,currMrfBlock1->targetEnd);
+	    exon2 = getExonNumber (transcript2,currMrfBlock2->targetStart,currMrfBlock2->targetEnd);
+	    intron1 = getIntronNumber (transcript1,currMrfBlock1->targetStart,currMrfBlock1->targetEnd);
+	    intron2 = getIntronNumber (transcript2,currMrfBlock2->targetStart,currMrfBlock2->targetEnd);
+	    junction1 = getJunctionNumber (transcript1,currMrfBlock1->targetStart,currMrfBlock1->targetEnd,exon1,intron1);
+	    junction2 = getJunctionNumber (transcript2,currMrfBlock2->targetStart,currMrfBlock2->targetEnd,exon2,intron2);
+	    if (transcript1 != transcript2) {
+	      currInter = arrayp (inters,arrayMax (inters),Inter);
+	      currInter->transcript1 = transcript1;
+	      currInter->transcript2 = transcript2;
+	      currInter->readStart1 = currMrfBlock1->targetStart;
+	      currInter->readStart2 = currMrfBlock2->targetStart;
+	      currInter->readEnd1 = currMrfBlock1->targetEnd;
+	      currInter->readEnd2 = currMrfBlock2->targetEnd;
+	      currInter->read1 = hlr_strdup (currMrfRead1->sequence);
+	      currInter->read2 = hlr_strdup (currMrfRead2->sequence);
+	      currInter->addNumInter = getAddingNumberInter( currInter );
+	      assignPairType (currInter,exon1,intron1,junction1,exon2,intron2,junction2);
 	    }
-          }
-        } //else die("overlapping intervals?");         
-
+	    if (transcript1 == transcript2) {
+	      numIntras++;
+	      if (exon1 > 0 && exon2 > 0) { // count intra only for reads mapped on exons
+		testSuperIntra.transcript = transcript1;
+		int ret = arrayFindInsert( superIntras, &testSuperIntra, &idx,(ARRAYORDERF)sortSuperIntras );
+		currSuperIntra = arrp( superIntras, idx, SuperIntra );
+		if( ret == 1 ) { // new SuperIntra
+		  currSuperIntra->intras = arrayCreate (100,Intra);
+		}
+		Intra *currIntra = arrayp (currSuperIntra->intras,arrayMax (currSuperIntra->intras),Intra);
+		currIntra->transcript= transcript1;
+		currIntra->readStart1 = currMrfBlock1->targetStart;
+		currIntra->readStart2 = currMrfBlock2->targetStart;
+		currIntra->readEnd1 = currMrfBlock1->targetEnd;
+		currIntra->readEnd2 = currMrfBlock2->targetEnd;
+		currIntra->addNumIntra += getAddingNumberIntra( currIntra, currMrfRead1->sequence, currMrfRead2->sequence);
+	      }
+	    }
+	  } 
+	}
         arrayDestroy (intervals1);
         arrayDestroy (intervals2);
       }
@@ -1015,7 +1016,7 @@ int main (int argc, char *argv[])
     fprintf (fp,"%d\n",arru (intraOffsets,i,int));
   }
   fclose (fp);
-  stringPrintf( buffer, "gzip %s.intraOffsets", argv[1] );
+  stringPrintf( buffer, "gzip -f %s.intraOffsets", argv[1] );
   hlr_system( string(buffer), 1);
   arrayDestroy( superIntras );
   arrayDestroy( superInters );
