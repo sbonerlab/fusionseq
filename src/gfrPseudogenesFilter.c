@@ -34,7 +34,7 @@ static float getNumInter( GfrInterRead* currInter, int readLength ) { // compute
   return( numInter );
 }
 
-int getNucleotideOverlap( int start, int end, Interval* currInterval ) {
+/*int getNucleotideOverlap( int start, int end, Interval* currInterval ) {
   int k;
   int overlap=0;
   for( k=0; k<arrayMax( currInterval->subIntervals); k++ ) {
@@ -42,7 +42,7 @@ int getNucleotideOverlap( int start, int end, Interval* currInterval ) {
     overlap+=positiveRangeIntersection( start, end, currSubInterval->start, currSubInterval->end);
   }
   return overlap;
-}
+  }*/
 
 int main (int argc, char *argv[]) {
 	GfrEntry *currGE;

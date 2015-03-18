@@ -210,6 +210,7 @@ int gfr_init (char *fileName)
   for (i = 0; i < arrayMax (tokens); i++) {
     gfr_addColumnType (textItem (tokens,i));
   }
+  textDestroy( tokens );
   return 1;
 }
 

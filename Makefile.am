@@ -60,7 +60,10 @@ bin_PROGRAMS = \
 	src/gfrSpliceJunctionFilter \
 	src/gfrClassify \
 	src/gfrWhiteListFilter \
-	src/gfrRandomPairingFilter
+	src/gfrRandomPairingFilter \
+	src/gfrPseudogenesFilter \
+	src/gfrSequenceComplexityFilter \
+	src/gfrGenomeSequenceUnknownFilter
 
 if BUILD_CGI
 
@@ -158,6 +161,15 @@ src_gfrWhiteListFilter_LDADD = src/libfusionseq.la -lbios
 
 src_gfrRandomPairingFilter_SOURCES = src/gfrRandomPairingFilter.c
 src_gfrRandomPairingFilter_LDADD = src/libfusionseq.la -lbios
+
+src_gfrPseudogenesFilter_SOURCES = src/gfrPseudogenesFilter.c
+src_gfrPseudogenesFilter_LDADD = src/libfusionseq.la -lbios -lm
+
+src_gfrSequenceComplexityFilter_SOURCES = src/gfrSequenceComplexityFilter.c
+src_gfrSequenceComplexityFilter_LDADD = src/libfusionseq.la -lbios -lm
+
+src_gfrGenomeSequenceUnknownFilter_SOURCES = src/gfrGenomeSequenceUnknownFilter.c
+src_gfrGenomeSequenceUnknownFilter_LDADD = src/libfusionseq.la -lbios
 
 # -----------------------------------------------------------------------------
 # CORE: Identifying sequences of the junction
@@ -278,6 +290,9 @@ install-data-hook:
 
 deploy:
 	scripts/install_deploy.pl
+
+debug:
+	$(MAKE) "CFLAGS=-g -DDEBUG " all $(AM_MAKEFILE)
 
 if USE_DOXYGEN
 

@@ -1022,6 +1022,9 @@ int main (int argc, char *argv[])
   arrayDestroy( superInters );
   arrayDestroy( inters );
   stringDestroy (buffer);
+  arrayDestroy ( intraOffsets );
+  arrayDestroy( interOffsetsAB );
+  arrayDestroy( interOffsetsBA );
   confp_close(conf);
   return EXIT_SUCCESS;
 }

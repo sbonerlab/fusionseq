@@ -51,10 +51,11 @@ int main (int argc, char *argv[])
   char *targetCopy;
   char *pos;
   int i,j;
+  SamParser* parser;
 
-  samParser_initFromFile ("-");
-  samEntries = samParser_getAllEntries ();
-  samParser_deInit (); 
+  parser = samparser_from_file ("-");
+  samEntries = samparser_get_all_entries ( parser );
+ 
   breakPoints = arrayCreate (10000,BreakPoint);
   for (i = 0; i < arrayMax (samEntries); i++) {
 

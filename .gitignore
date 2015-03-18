@@ -72,6 +72,7 @@ Thumbs.db
 .nfs*
 .fuse_*
 *.old
+.dirstamp
 src/*Filter
 bowtie2bp
 gfr2gff
@@ -89,3 +90,5 @@ gfrClassify
 gfrCountPairTypes
 gfr2bpJunctions
 validateBpJunctions
+src/test
+src/cgi

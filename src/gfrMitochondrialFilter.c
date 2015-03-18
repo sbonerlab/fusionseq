@@ -155,10 +155,3 @@ if( confp_get( conf, "BLAT_GFSERVER_HOST")==NULL ) {
 }
 
 
-/*int indexOfInter= atoi( *(strchr(blQ->qName,'/'))='\0' ); // this is to remove the reads, but we should keep it 
-	  if( arrayRemoveD( currGE->interReads, indexOfInter ) != 0 ) 
-	    die("Something went wrong when removing element[%d] from the array interReads(%d)", indexOfInter, arrayMax(currGE->interReads));
-	  if( arrayRemoveD( currGE->readsTranscript1, indexOfInter ) != 0 ) 
-	    die("Something went wrong when removing element[%d] from the array readsTranscript1(%d)", indexOfInter, arrayMax(currGE->readsTranscript1));
-	  if( arrayRemoveD( currGE->readsTranscript2, indexOfInter ) != 0 ) 
-	  die("Something went wrong when removing element[%d] from the array readsTranscript2(%d)", indexOfInter, arrayMax(currGE->readsTranscript2));*/
